@@ -1,0 +1,40 @@
+body {text-align: center;background: #fff;margin-top: 0px; min-width: 960px;}
+ul.highlight {color: red; font-size: 24px;}
+#report {color: navy; background: #fff; }
+#move_up {padding: 10px; cursor: pointer; }
+#move_down {padding: 10px; cursor: pointer; float: left; }
+#editor {min-height: 20px; background: #cff; max-width: 960px;}
+#edit_props {text-align: left; }
+#content {text-align: left; background: #fff; position: relative}
+#choice {background: #fcf; width: 400px;}
+#record {background: #88f; width: 400px;}
+#filter {background: #4f4; width: 400px;}
+#sort {background: #ff8; width: 400px;}
+#browser {width: 400px; max-height: 600px; background: #eee; overflow: scroll;}
+#object {position: absolute; top: 0px; width: 560px; margin-left: 400px; background: #fff; min-height: 400px; float: right;}
+#img_block {text-align: center; float: right; }
+#album {text-align: center; }
+h4 {margin-left: 40px; text-align: left; color: blue; }
+img#primary {max-width: 200px;  max-height: 400px; }
+.list_left {text-align: left; }
+img#i_album0 {margin: 10px; padding: 10px; max-width: 200px; max-height: 100px; cursor: pointer; }
+img#i_album1 {margin: 10px; padding: 10px; max-width: 200px; max-height: 100px; cursor: pointer; }
+img#i_album2 {margin: 10px; padding: 10px; max-width: 200px; max-height: 100px; cursor: pointer; }
+b.show {color: blue; cursor: pointer;}
+b.name {color: navy; font-size: 24px; float: left; }
+p.centred {text-align: center; color: green;}
+span.centred {text-align: center; color: green;}
+span.record {color: blue; cursor: pointer;}
+#clear_button {color: green; background: #eee; cursor: pointer; padding: 2px; font-size: x-small; font-weight: bold; } 
+span.ebutton {margin-left: 10px; margin-right: 10px; background: #eee; cursor: pointer; }
+span.button {margin-left: 20px; color: navy; background: #eee; }
+span#edit_button {color: red; }
+span#add_button {color: green; }
+span#publish_button {color: blue; background: #fff; }
+span#discard_button {color: navy; background: #fff; }
+li.editable {color: black; list-style-type: circle; cursor: pointer; min-height: 30px; }
+li {display: block; }
+span.header {color: blue; cursor: pointer; margin: 20px; width: 80px; }
+#footer {border-top: 1px solid #000000; clear: both; margin-left: 20px; padding-top: 10px;}
+#cursor{text-align: right; }
+
