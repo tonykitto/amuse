@@ -6,7 +6,7 @@ amuse_um JSON is a sub-set of JSON that in its simplest form uses only the basic
 Each name in the "objects" group of name/value pairs is that of the collection's 'object number' with an Object containing one or more name/value pairs, providing property names and their String values.
 
 ### Example of an amuse_um Object
-'''
+```
 {
   "name": "Towneley watercolours collection",
   "edition": "1",
@@ -23,7 +23,7 @@ Each name in the "objects" group of name/value pairs is that of the collection's
     ... <more objects>
   }
 }
-'''
+```
 
 In the domain of museums, object number is a unique number assigned to a physical object that is part of a museum's collection, also known as a catalog or accession number. In the above example, the object number is "waco102" .
 
