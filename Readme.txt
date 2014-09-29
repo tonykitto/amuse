@@ -1,1 +1,0 @@
-Central to amuse_um is a set of JSON text files manipulated by a JavaScript library to support a basic collections management system suitable for a small to medium museum or an individual collector. The primary use is off-line with file uri links and and a flat file system using a post-IE8 browser. The no third-party libraries are required.
