@@ -1,0 +1,469 @@
+// simple amuse_json collection editor
+var EDIT = {
+  version : "1.0",
+  date : "2014-09-15",
+  original : "", // json text for VIEW.collection
+  editor : "", // closed | select | opened | active
+  o_group : "", // name of property group being edited
+  o_edit : "", // name of object being edited
+  edit_node : "",
+  o_publish : false, // true if collection being edited has changed 
+  term_list : {},
+  edit_original : "",
+  edit_props : "",
+  edit_item : "",
+	location_from : "",
+	location_to : "",
+  
+  setup_EDIT: function(){
+    "use strict";
+    var headline;
+    headline = document.getElementById("headline");
+    headline.innerHTML += " / EDITOR"; 
+    EDIT.original = JSON.stringify(window.VIEW.collection, null, "  ");
+    document.getElementById("report").innerHTML = 
+      "<span class=\"ebutton\" id=\"edit_button\" \"></span>"+
+      "<span class=\"ebutton\" id=\"add_button\" \"></span>"+
+      "<span class=\"ebutton\" id=\"publish_button\" \"></span>"+
+      "<span class=\"ebutton\" id =\"discard_button\" \"></span>";
+    EDIT.editor = "closed";
+    EDIT.o_publish = false;
+    document.getElementById("edit_button").onclick = EDIT.show_editor;
+    document.getElementById("add_button").onclick = EDIT.add_object;
+    document.getElementById("publish_button").onclick = EDIT.publish;
+    document.getElementById("discard_button").onclick = EDIT.discard;
+    EDIT.set_term_list();
+    EDIT.show_editor();
+    return "";
+  },
+  /* rinse text = replaces  symbols '&', '>' and '<' by their html equivalent but avoids duplication
+    replaces all whitespace characters by a single space, and trim leading and trailing spaces */
+  rinse: function(text){
+    "use strict";
+    function trim(text){
+      return (text || "").replace(/^\x20+|\x20+$/g,"");
+    }
+      
+    var clean, parts, i;
+    clean = text.replace(/[\f\n\r\t]/g," ");
+    parts = clean.split("&");
+    clean = parts[0];
+    for (i=1; i<parts.length; i += 1){
+      if (/^amp;|^gt;|^lt;|^quot;|^#\d+;/.test(parts[i])){clean += "&"+parts[i]; }
+      else{clean += "&amp;"+parts[i]; }
+    }
+    clean = clean.replace(/</g,"&lt;");
+    clean = clean.replace(/>/g,"&gt;");
+    return trim(clean);
+  },
+  set_term_list: function(){
+    "use strict";
+    var o, prop, prop_tail, dot, prop_head;
+    EDIT.term_list = {};
+    if (window.amuse_TERMS){
+      o = window.amuse_TERMS.objects.terms;
+      for (prop in o){
+        prop_tail = prop.slice(7); // each property as header $terms_
+        dot = prop_tail.indexOf(".");
+        if (dot>0){
+          prop_head = prop_tail.slice(0, dot);
+          if ("amuse_"+prop_head !== window.VIEW.file_name){continue; }
+          prop_tail = prop_tail.slice(dot+1);
+        }
+        EDIT.term_list[prop_tail] = o[prop];
+      }
+    }
+    return "";
+  },
+  show_editor: function(){
+    "use strict";
+    if (! EDIT.editor){ return ""; }
+    if (EDIT.editor === "closed"){
+      document.getElementById("edit_button").innerHTML = "EDIT?";
+      document.getElementById("add_button").innerHTML = "ADD OBJECT?";
+      document.getElementById("editor").innerHTML = "select object to edit or add new object";
+      EDIT.editor = "select";
+    }
+    else if (EDIT.editor === "select"){ EDIT.editing(); }
+    else if (EDIT.editor === "opened"){
+      EDIT.editor = "closed";
+      EDIT.show_editor();
+    }
+    return "";
+  },
+  editing: function(){
+    "use strict";
+    var object_name, group_header, i, group;
+    if (EDIT.editor === "select"){
+      object_name = window.VIEW.list[window.VIEW.number];
+      EDIT.o_edit = object_name;
+      EDIT.editor = "opened";
+      document.getElementById("edit_button").innerHTML = "CLOSE?";
+      document.getElementById("add_button").innerHTML = "";
+      group_header = "<p><b class=\"name\" >"+object_name+"</b>";
+      for (i in window.VIEW.collection.$groups){
+        group = window.VIEW.collection.$groups[i];
+        if (window.VIEW.collection[group].length >0 ){
+          group_header += "<span class=\"header\" onclick=\"EDIT.edit_group('"+
+          group+"')\")>"+"<b>"+group.slice(1)+"</b></span>";
+        }
+      }
+      group_header += "</p><div id=\"edit_props\"></div>";
+      document.getElementById("editor").innerHTML = group_header;
+      document.getElementById("edit_props").innerHTML = "select a property group";
+    }
+    else{
+      if (EDIT.editor !== "active"){
+        EDIT.editor = "closed";
+        EDIT.show_editor();
+      }
+    }
+    return "";
+  },
+  edit_group: function(group){
+    "use strict";
+    var object, html, list, i, prop, value;
+    if (EDIT.editor === "active"){ return ""; }
+    EDIT.o_group = group;
+    object = window.VIEW.collection.objects[EDIT.o_edit];
+    html = "<ul>"+group.toUpperCase();
+    list = window.VIEW.collection[group];
+    for (i in list){
+      prop = list[i];
+      if (prop in object){ 
+        if (prop.charAt(0) === "$"){ value = "<strong>[.. edit list ..]</strong>"; }
+        else{ value = object[prop]; }
+      }
+      else{ value = ""; }
+      html += "<li onclick=\"EDIT.go_edit(this)\" class=\"editable\" >"+list[i]+" : "+value+"</li>";
+    }
+    document.getElementById("edit_props").innerHTML = html+"</ul>";
+    return "";
+  },
+  go_edit: function(node){
+    "use strict";
+    function trim(text){
+      return (text || "").replace(/^\x20+|\x20+$/g,"");
+    }
+    
+		var text, colon, term, list, edit_HTML, i, tlist, options, length, entry ;
+		if (EDIT.editor === "active"){ return ""; }
+		EDIT.editor = "active";
+		EDIT.edit_node = node;
+		text = node.innerHTML;
+		colon = text.indexOf(":");
+		term = trim(text.slice(0, colon));
+		EDIT.edit_item = EDIT.o_edit;
+		EDIT.edit_props = term;
+		if (term.charAt(0)==="$"){
+			if (term in window.VIEW.collection.objects[EDIT.o_edit]){
+				list = window.VIEW.collection.objects[EDIT.o_edit][term];
+			}
+			else{ list = []; }
+			edit_HTML = "<h3>edit list entry / add list entry</h3><ul>";
+			if (list.length>0){
+				for (i in list){
+					edit_HTML += "<li><input type=\"text\" id=\"edit_list"+i+"\" size=\"60\" value=\""+
+					list[i]+"\" /></li>";
+				}
+			}
+			edit_HTML += "<li><input type=\"text\" id=\"edit_list"+list.length+"\" size=\"60\" value=\"\" />"+
+				"<span class=\"ebutton\" id=\"save_button\" onclick='EDIT.save_list(event)'>SAVE</span>"+
+				"<span class=\"ebutton\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span></li></ul>";
+			document.getElementById("edit_props").innerHTML = edit_HTML;
+			document.getElementById("edit_list"+list.length).focus();
+			return "";
+		}
+		EDIT.edit_original = trim(text.slice(colon+1));
+		if (term in EDIT.term_list){
+			tlist = EDIT.term_list[term];
+			options = ["<b>Select from the "+
+				EDIT.edit_props+" list: </b><select id=\"term\" "+
+				"onchange=EDIT.save_term(term.value)>"];
+			options.push("<option value=\"none\">select a term</option>");
+			options.push("<option value=\"none\">no change</option>");
+			length = tlist.length;
+			for (i=0; i<length; i+= 1){
+				entry = tlist[i];
+				options.push("<option value=\""+entry+"\">"+entry+"</option>");
+			}
+			options.push("</select>");
+			node.innerHTML = options.join("\r\n");
+			return "";
+		}
+		if (EDIT.edit_original.length>40){
+			edit_HTML = EDIT.edit_props+": <textarea id=\"edit_box\" rows=\"6\" cols=\"80\">"+
+				EDIT.edit_original+"</textarea>";
+		}
+		else{
+			edit_HTML = EDIT.edit_props+": <input type=\"text\" id=\"edit_box\" size=\"60\" value=\""+
+				EDIT.edit_original+"\" />";
+		}
+		edit_HTML += 
+			"<span class=\"button\" id=\"save_button\" onclick='EDIT.save_edit(event)'>SAVE</span>"+
+			"<span class=\"button\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span>";
+		node.innerHTML = edit_HTML;
+		document.getElementById("edit_box").focus();
+    return "";
+  },
+  save_edit: function(ev){
+    "use strict";
+    var node, edit_update;
+    ev.stopPropagation();
+    node = document.getElementById("edit_box");
+    edit_update = EDIT.rinse(node.value);
+    if (edit_update !== EDIT.edit_original){
+      if (edit_update){
+        window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = edit_update;
+      }
+      else{
+        if (EDIT.edit_props === window.VIEW.collection.$props[0]){
+          window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = 
+            "brief description to be added here";
+        }
+        else{ delete window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props]; }
+      }
+      EDIT.show_publishing();
+    }
+    EDIT.edit_original = "";
+    EDIT.edit_item = "";
+    EDIT.editor = "opened";
+    if (EDIT.o_edit === window.VIEW.list[window.VIEW.number]){
+      window.VIEW.display_object(EDIT.o_edit);
+    }
+    EDIT.edit_group(EDIT.o_group);
+    return "";
+  },
+  cancel_edit: function(ev){
+    "use strict";
+    ev.stopPropagation();
+    EDIT.edit_original = "";
+    EDIT.edit_item = "";
+    EDIT.editor = "opened";
+    EDIT.edit_group(EDIT.o_group);
+    return "";
+  },
+  save_list: function(ev){
+    "use strict";
+    var original, length, changed, list, i, entry;
+    ev.stopPropagation();
+    if (EDIT.edit_props in window.VIEW.collection.objects[EDIT.o_edit]){
+      original = window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props];
+    }
+    else{ original = []; }
+    length = original.length;
+    changed = false;
+    list = [];
+    for (i=0; i<length; i += 1){
+      entry = EDIT.rinse(document.getElementById("edit_list"+i).value);
+      if (! entry){ changed = true; }
+      else{ 
+        list.push(entry);
+        if (entry !== original[i]){ changed = true; }
+      }
+    }
+    entry = EDIT.rinse(document.getElementById("edit_list"+length).value);
+    if (entry){list.push(entry); changed = true; }
+    if (list.length === 0){
+      delete window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props];
+    }
+    else{
+      window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = list;
+    }
+    if (changed){ EDIT.show_publishing(); }
+    EDIT.edit_original = "";
+    EDIT.edit_item = "";
+    EDIT.editor = "opened";
+    if (EDIT.o_edit === window.VIEW.list[window.VIEW.number]){
+      window.VIEW.display_object(EDIT.o_edit);
+    }
+    EDIT.edit_group(EDIT.o_group);
+    return "";
+  },
+  save_term: function(term){
+    "use strict";
+    function has_location_history(){
+      var i;
+      for (i in window.VIEW.collection.$props){
+        if (window.VIEW.collection.$props[i] === "$location_history"){
+          return true;
+        }
+      }
+      return false;
+    }
+    function today(){
+      var now;
+      now = new Date();
+      now = now.toDateString().split(" ");
+      // day month date year
+      return now[2]+" "+now[1]+" "+now[3];
+    }
+    
+		var loan, html;
+		if ((term !== "none") && (term !== EDIT.edit_original)){
+			if ((EDIT.edit_props === "current_location" ) && (has_location_history())){
+				EDIT.location_from = EDIT.edit_original;
+				EDIT.location_to = term;
+				if (term === "on loan"){ loan = "in the form <b>On loan to X until Y</b>"; }
+				else loan = "as appropriate";
+				html = "<h3>Movement Control</h3><p>Add reason for movement<br>"+loan+
+				"<ul><li>date: "+today()+"</li>"+
+				"<li>from: "+EDIT.location_from+"</li>"+
+				"<li>to: "+EDIT.location_to+"</li></ul>"+
+				"Reason: <input type=\"text\" id=\"edit_box\" size=\"60\" value=\"\" />"+
+				"<span class=\"ebutton\" id=\"save_button\" onclick='EDIT.save_reason(event)'>SAVE</span>"+
+				"<span class=\"ebutton\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span>";
+				document.getElementById("edit_props").innerHTML = html;
+				return "";
+			}
+			window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = term;
+			EDIT.show_publishing();
+		}
+		EDIT.edit_original = "";
+		EDIT.edit_item = "";
+		EDIT.editor = "opened";
+		if (EDIT.o_edit === window.VIEW.list[window.VIEW.number]){
+			window.VIEW.display_object(EDIT.o_edit);
+		}
+		EDIT.edit_group(EDIT.o_group);
+    return "";
+  },
+  save_reason: function(ev){
+    "use strict";
+    function today(){
+      var now;
+      now = new Date();
+      now = now.toDateString().split(" ");
+      // day month date year
+      return now[2]+" "+now[1]+" "+now[3];
+    }
+    
+    var o, node, reason;
+    ev.stopPropagation();
+    o = window.VIEW.collection.objects[EDIT.o_edit];
+    node = document.getElementById("edit_box");
+    reason = EDIT.rinse(node.value);
+    o.current_location = EDIT.location_to;
+    if (! ("$location_history" in o)){o.$location_history = []; }
+    o.$location_history.push("date: "+today()+",from: "+EDIT.location_from+
+      ",to: "+EDIT.location_to+",reason: "+reason);
+    if (EDIT.location_to === "on loan"){ o.exhibit_note = reason; }
+    else if (EDIT.location_to.search("store") === 0){o.exhibit_note = "stored"; }
+    else{o.exhibit_note = "displayed"; }
+    EDIT.show_publishing();
+    EDIT.edit_original = "";
+    EDIT.edit_item = "";
+    EDIT.editor = "opened";
+    if (EDIT.o_edit === window.VIEW.list[window.VIEW.number]){
+      window.VIEW.display_object(EDIT.o_edit);
+    }
+    EDIT.edit_group(EDIT.o_group);
+    return "";
+  },  
+  show_publishing: function(){
+    "use strict";
+    if (EDIT.o_publish){ return ""; }
+    EDIT.o_publish = true;
+    document.getElementById("publish_button").innerHTML = "PUBLISH?";
+    document.getElementById("discard_button").innerHTML = "DISCARD?";
+    return "";
+  },
+  publish: function(){
+    "use strict";
+    function today(){
+      var now;
+      now = new Date();
+      now = now.toDateString().split(" ");
+      // day month date year
+      return now[2]+" "+now[1]+" "+now[3];
+    }
+    
+    var update, o, file_name, textFileAsBlob, downloadLink;
+    if (EDIT.editor === "active"){return ""; }
+    update = JSON.stringify(window.VIEW.collection, null, "  ");
+    if (update === EDIT.original){
+      alert("The result of all the changes have been cancelled out - no changes");
+    }
+    else{
+      if (confirm("Confirm you wish to publish changes")){
+        o = window.VIEW.collection;
+        o.edition = ""+(1+parseInt(o.edition, 10));
+        o.date = today();
+        o.manual = "true";
+        file_name = window.VIEW.file_name+"_"+o.edition+".json";
+        update = JSON.stringify(window.VIEW.collection, null, "  ");
+        textFileAsBlob = new Blob([update],{type:'text/plain'});
+        downloadLink = document.createElement("a");
+        downloadLink.download = file_name;
+        downloadLink.innerHTML = "Download File";
+        if (typeof window.webkitURL === "undefined"){
+        // Firefox requires the link to be added to the DOM before it can be clicked
+          downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+          downloadLink.onclick = EDIT.destroyClickedElement;
+          downloadLink.style.display = "none";
+          document.body.appendChild(downloadLink);
+        }
+        else{
+        // Chrome allows the link to be clicked even when not added to the DOM
+          downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        }
+        downloadLink.click();
+      }
+      else{ return; }
+    }
+    EDIT.o_publish = false;
+    document.getElementById("publish_button").innerHTML = "";
+    document.getElementById("discard_button").innerHTML = "";
+    EDIT.editor = "closed";
+    window.VIEW.start_VIEW(window.VIEW.collection);
+    return "";
+  },
+  // destroyClickedElement required for Firefox
+  destroyClickedElement: function(event){
+      "use strict";
+    document.body.removeChild(event.target);
+  }, 
+  discard: function(){
+    "use strict";
+    if (confirm("Confirm you wish to discard changes")){
+      window.VIEW.collection = JSON.parse(EDIT.original);
+      window.VIEW.start_VIEW(window.VIEW.collection);
+    }
+    return "";
+  },
+  add_object: function(){
+    "use strict";
+		function next_object(){
+			var object_name, list, last, parse_string, last_;
+			list = [];
+			for (object_name in window.VIEW.collection.objects){
+				list.push(object_name);
+			}
+			last = window.VIEW.nat_sort(list)[list.length-1];
+			parse_string = /(\D*)(\d*)(.*)/;
+			last_ = last.match(parse_string);
+			if (last_[2]){
+				return last_[1]+(1+parseInt(last_[2],10));
+			}
+			return "";
+		}
+    
+		var first_property, new_name;
+		if ((EDIT.editor === "opened") || (EDIT.editor === "active")){ return ""; }
+		first_property = window.VIEW.collection.$props[0];
+		new_name = next_object();
+    if (new_name){
+      window.VIEW.collection.objects[new_name] = {};
+      window.VIEW.collection.objects[new_name][first_property] = "first entry to be added here";
+      EDIT.show_publishing();
+      window.VIEW.full_list.push(new_name);
+      window.VIEW.reset_collection();
+      window.VIEW.display_object(new_name);
+    }
+    else{ 
+      alert(window.VIEW.file_name+
+        " is restricted and cannot be extended using this application");
+    }
+    return "";
+  }
+};
