@@ -1,7 +1,8 @@
 // simple amuse_json collection viewer
+// adds 'has_parts' / 'part_of' properties to display_objects function
 var VIEW = {
-	version : "1.0",
-  date : "2014-09-09",
+	version : "1.1",
+  date : "2014-10-02",
   album_image: -1,
   album: "",
   folder: "",
@@ -79,8 +80,31 @@ var VIEW = {
       }
       return html+"</ul>";
     }
+    
+    function has_value(object, property){
+      if (typeof object[property] === "string"){
+        return "<li>"+property+" : "+object[property]+"</li>";
+      }
+      else if (typeof object[property] === "object"){
+        return display_list(property, object[property]);
+      }
+      return "";
+    }
+    
+    function is_a_part(object_number){
+      var part_of;
+      if ("part_of" in VIEW.collection.objects[object_number]){
+        part_of = VIEW.collection.objects[object_number].part_of;
+        if ((part_of in VIEW.collection.objects) && 
+            ("has_parts" in VIEW.collection.objects[part_of])){
+          return part_of;
+        }
+      }
+      return "";
+    }
 
-    var object, content, valid, view_groups, i, group, key_list, group_result, j, prop;
+    var object, content, valid, part_of, parts, view_groups,
+        i, group, key_list, group_result, j, prop, value;
     document.getElementById("object_number").value = object_number;
     VIEW.number = VIEW.names[object_number];
     object = VIEW.collection.objects[object_number];
@@ -98,6 +122,11 @@ var VIEW = {
     else{ content = ""; }
     content += "<h4>"+object_number+"</h4><ul>";
     valid = false;
+    part_of = is_a_part(object_number);
+    if (part_of){ 
+      parts = "<li>part_of : "+VIEW.collection.objects[part_of].has_parts+"</li>";
+    }
+    else{ parts = ""; }
     view_groups = VIEW.collection.$groups;
     for (i in view_groups){
       group = view_groups[i];
@@ -106,12 +135,12 @@ var VIEW = {
         group_result = "";
         for (j in key_list){
           prop = key_list[j];
-          if (typeof object[prop] === "string"){
-            group_result += "<li>"+prop+" : "+object[prop]+"</li>";
+          if (prop === "part_of"){ value = parts; }
+          else{ value = has_value(object, prop); }
+          if ((! value) && part_of && (prop !== "has_parts")){
+            value = has_value(VIEW.collection.objects[part_of], prop);
           }
-          else if ( typeof object[prop] === "object" ){
-            group_result += display_list(prop, object[prop]);
-          }
+          group_result += value;
         }
         if (group_result){
           valid = true;
