@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AMUSE_UM BROWSER / EDITOR</title>
+<link rel="stylesheet" href="../css/amuse_um.css">
+<script src="js/amuse_NW.js"></script>
+<script src="js/nFSO.js"></script>
+<script src="../amuse_VIEW.js"></script>
+<script src="js/amuse_EDIT_nw.js"></script>
+<script src="js/amuse_NAMES.js"></script>
+<script src="../amuse_PARSE.js"></script>
+<script src="web/objects/amuse_TERMS.js"></script>
+</head>
+<body>
+<div id="amused_body">
+  <h1 id="headline" >amuse-um viewer / editor</h1>
+  <div id="choice">
+    <h2>select a collection</h2>
+    <select id="selected_choice" />
+    </select>
+  </div>
+  <div id="report">Failed to load javascript
+  </div>
+  <div id="cursor">
+    <img src="images/move_down.gif" id="move_down">
+    <img src="images/move_up.gif" id="move_up">
+  </div>
+  <div id="editor">
+  </div>
+  <div id="content">
+    <div id="record" class="list_left">
+      <p><b>Select an object number</b>
+      <input type="text" id="object_number" />
+      </p>
+    </div>
+    <div id="filter" class="list_left">
+      <p><b>Input keywords to filter records</b>
+        <input type="text" id="filter_box"><span id="clear_button">clear</span>
+      </p>
+    </div>
+    <div id="sort" class="list_left">
+    <p>
+      <b>Sort objects by property value</b>
+      <select id="selected_sort">
+      </select>
+    </p>
+    </div>
+    <div id="browser" class="list_left"></div>
+    <div id="object"></div>
+  </div>
+</div>
+</body>
+</html>

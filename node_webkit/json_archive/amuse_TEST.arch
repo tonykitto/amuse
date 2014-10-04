@@ -1,0 +1,88 @@
+{
+ "meta": {
+  "1": "04 Oct 2014",
+  "2": "04 Oct 2014"
+ },
+ "Test1": {
+  "briefly": [
+   "1:Test object one"
+  ],
+  "description_note": [
+   "1:testing only"
+  ],
+  "content_summary": [
+   "1:Testing for unicode characters &amp; £ € © ç ö ÿ ¼ ½ ¾"
+  ],
+  "$characters": [
+   "1:UTF-8: keystroke Alt+0160 to 0172, 0174, 0175  ¡¢£¤¥¦§¨©ª«¬®¯\tUTF-8: keystroke Alt+0176 to 0191 °±²³´µ¶·¸¹º»¼½¾¿\tUTF-8: keystroke Alt+0192 to 0207 ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ\tUTF-8: keystroke Alt+0208 to 0223 ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß\tUTF-8: keystroke Alt+0224 to 0239 àáâãäåæçèéêëìíîï\tUTF-8: keystroke Alt+0240 to 0255 ðñòóôõö÷øùúûüýþÿ\tThis has been written with amused_hta using only ASCII characters.\tAlt+0173 was omitted as JSLint reports it as an unsafe character"
+  ]
+ },
+ "Test2": {
+  "briefly": [
+   "2:Test object two - ceramic trio"
+  ],
+  "has_parts": [
+   "2:tea cup, saucer and plate"
+  ],
+  "acquisition_method": [
+   "2:gift"
+  ],
+  "donor": [
+   "2:Mrs Towneley"
+  ],
+  "acquisition_date": [
+   "2:1900-01-01"
+  ]
+ },
+ "Test3": {
+  "briefly": [
+   "2:tea cup"
+  ],
+  "part_of": [
+   "2:Test2"
+  ],
+  "current_location": [
+   "2:store"
+  ],
+  "exhibit_note": [
+   "2:stored"
+  ],
+  "normal_location": [
+   "2:store"
+  ]
+ },
+ "Test4": {
+  "briefly": [
+   "2:saucer"
+  ],
+  "part_of": [
+   "2:TEST2"
+  ],
+  "normal_location": [
+   "2:store"
+  ],
+  "current_location": [
+   "2:store"
+  ],
+  "exhibit_note": [
+   "2:stored"
+  ]
+ },
+ "Test5": {
+  "briefly": [
+   "2:plate"
+  ],
+  "part_of": [
+   "2:Test2"
+  ],
+  "normal_location": [
+   "2:store"
+  ],
+  "current_location": [
+   "2:store"
+  ],
+  "exhibit_note": [
+   "2:stored"
+  ]
+ }
+}
