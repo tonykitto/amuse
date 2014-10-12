@@ -1,8 +1,8 @@
 // Towneley amuse_um collection editor
 // archive folder is json_archive
 var NW = {
-  version : "0.1",
-  date : "2014-10-10",
+  version : "0.1a",
+  date : "2014-10-12",
   object : {},
   archive: function(files, latest_edition){
     "use strict";
@@ -178,7 +178,7 @@ var NW = {
       "Version "+NW.version+" ["+NW.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um\\";
+    window.FSO.pwd += "amuse_um\\node_webkit\\";
     window.VIEW.editor = window.EDIT.setup_EDIT;
     select = "<option value=\"\">Select a collection </option>";
     for (name in window.amuse_NAMES){
