@@ -1,8 +1,8 @@
 // Towneley amuse_um collection editor
 // archive folder is json_archive
 var NW = {
-  version : "0.0",
-  date : "2014-09-25",
+  version : "0.1",
+  date : "2014-10-10",
   object : {},
   archive: function(files, latest_edition){
     "use strict";
@@ -85,7 +85,7 @@ var NW = {
       return "Missing "+json_file_name;
     }
     text = window.FSO.read_file(json_file_name);
-    window.FSO.create_file(js_file_name,"var "+collection+" = "+text+";\r\n");
+    window.FSO.create_file(js_file_name,"var "+collection+" = "+text+";\n");
     return "";
   },
   list_amuse_files: function(collection, folder,  tag){
@@ -111,6 +111,10 @@ var NW = {
       // first remove any leading or trailing white space
       json_text = json_text.slice(0,json_text.lastIndexOf("}")+1);
       json_text = json_text.slice(json_text.indexOf("{"));
+      // if EOL is CRLF, remove CR
+      if (json_text.slice(0,3) === "{\r\n"){
+        json_text = json_text.split("\r\n").join("\n");
+      }
       js_file = window.FSO.pwd+"web\\objects\\"+js_name+".js";
       if (! window.FSO.file_exists(js_file)){
         alert("Missing "+js_file);
@@ -174,7 +178,7 @@ var NW = {
       "Version "+NW.version+" ["+NW.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um\\node_webkit\\";
+    window.FSO.pwd += "amuse_um\\";
     window.VIEW.editor = window.EDIT.setup_EDIT;
     select = "<option value=\"\">Select a collection </option>";
     for (name in window.amuse_NAMES){
