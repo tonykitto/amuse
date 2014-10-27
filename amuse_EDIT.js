@@ -1,7 +1,7 @@
 // simple amuse_json collection editor
 var EDIT = {
-  version : "1.0",
-  date : "2014-09-15",
+  version : "1.1",
+  date : "2014-10-26",
   original : "", // json text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -19,7 +19,7 @@ var EDIT = {
     "use strict";
     var headline;
     headline = document.getElementById("headline");
-    headline.innerHTML += " / EDITOR"; 
+    if (headline){ headline.innerHTML += " / EDITOR"; }
     EDIT.original = JSON.stringify(window.VIEW.collection, null, "  ");
     document.getElementById("report").innerHTML = 
       "<span class=\"ebutton\" id=\"edit_button\" \"></span>"+
@@ -433,37 +433,59 @@ var EDIT = {
   },
   add_object: function(){
     "use strict";
-		function next_object(){
-			var object_name, list, last, parse_string, last_;
-			list = [];
-			for (object_name in window.VIEW.collection.objects){
-				list.push(object_name);
-			}
-			last = window.VIEW.nat_sort(list)[list.length-1];
-			parse_string = /(\D*)(\d*)(.*)/;
-			last_ = last.match(parse_string);
-			if (last_[2]){
-				return last_[1]+(1+parseInt(last_[2],10));
-			}
-			return "";
-		}
-    
-		var first_property, new_name;
-		if ((EDIT.editor === "opened") || (EDIT.editor === "active")){ return ""; }
-		first_property = window.VIEW.collection.$props[0];
-		new_name = next_object();
-    if (new_name){
-      window.VIEW.collection.objects[new_name] = {};
-      window.VIEW.collection.objects[new_name][first_property] = "first entry to be added here";
-      EDIT.show_publishing();
-      window.VIEW.full_list.push(new_name);
-      window.VIEW.reset_collection();
-      window.VIEW.display_object(new_name);
+    function next_object(){
+      var object_name, list, last, parse_string, last_, choice;
+      list = [];
+      for (object_name in window.VIEW.collection.objects){
+        list.push(object_name);
+      }
+      last = window.VIEW.nat_sort(list)[list.length-1];
+      parse_string = /(\D*)(\d*)(.*)/;
+      last_ = last.match(parse_string);
+      choice = [];
+      if (last_[3]){
+        choice.push(last_[1]+last_[2]+"."+(1+parseInt(last_[3].slice(1),10)));
+      }
+      else{
+        choice.push(last_[1]+last_[2]+".1");
+      }
+      choice.push(last_[1]+(1+parseInt(last_[2],10)));
+      choice.push(last_[1]+(1+parseInt(last_[2],10))+".1");  
+      return choice;
     }
-    else{ 
-      alert(window.VIEW.file_name+
-        " is restricted and cannot be extended using this application");
+    
+    var choice, select, i, name;
+    if ((EDIT.editor === "opened") || (EDIT.editor === "active")){ return ""; }
+    document.getElementById("edit_button").innerHTML = "";
+    choice = next_object();
+    select = "<p><b>Choose next object name from this list </b>"+
+      "<select id=\"selected_name\" onchange=EDIT.object_choice(selected_name.value)>";
+    select += "<option value=\"\">one of</option>";
+    for (i in choice){
+      name = choice[i];
+      select += "<option value=\""+name+"\">"+name+"</options>";
+    }
+    select += "<option value=\"\">none</options>";
+    document.getElementById("editor").innerHTML = select+"</select><p>";
+
+    
+    return "";
+  },
+  object_choice: function(object_name){
+    "use strict";
+    var first_property;
+    EDIT.editor = "closed";
+    EDIT.show_editor();
+    EDIT.show_publishing();
+    if (object_name){
+      window.VIEW.collection.objects[object_name] = {};
+      first_property = window.VIEW.collection.$props[0];   
+      window.VIEW.collection.objects[object_name][first_property] = "entry to be added here";
+      window.VIEW.full_list.push(object_name);
+      window.VIEW.reset_collection();
+      window.VIEW.display_object(object_name);
     }
     return "";
   }
+
 };
