@@ -1,7 +1,7 @@
-// Towneley amuse_um collection editor, one html page for each collection
+// support for simple web API 
 var amuse_um = {
-	version : "4.2",
-	date : "2014-09-15",
+	version : "4.3",
+	date : "2014-10-31",
 	session_init: function(coll, query){
     "use strict";
     var event;
@@ -11,7 +11,6 @@ var amuse_um = {
     window.VIEW.file_name = coll;
     window.VIEW.start_VIEW(window[coll]);
     if (query){
-      window.EDIT.editor = ""; // editing not allowed when entered via search
       if (query in window[coll].objects){
         window.VIEW.display_object(query);
       }
@@ -23,12 +22,6 @@ var amuse_um = {
         window.VIEW.frecord_handle(event);
       }
       return "";
-    }
-    else{
-      if (! localStorage){
-        alert("Editing not supported with this browser");
-        window.EDIT.editor = "";
-      }
     }
     return "";
 	}
