@@ -1,6 +1,7 @@
 var cooper_hewitt_Matchsafe = {
  "name": "Cooper Hewitt Matchsafes ",
- "date": "29 Sep 2014",
+ "date": "09 Nov 2014",
+ "edition": "1",
  "objects": {
   "18493697": {
    "title": "Matchsafe, \"Anglo-Bavarian Amber Ale\", late 19th–early 20th century",

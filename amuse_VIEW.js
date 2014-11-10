@@ -1,8 +1,8 @@
 // simple amuse_json collection viewer
-// adds 'has_parts' / 'part_of' properties to display_objects function
+// adds #tags filter
 var VIEW = {
-	version : "1.1",
-  date : "2014-10-02",
+  version : "1.2",
+  date : "2014-11-10",
   album_image: -1,
   album: "",
   folder: "",
@@ -190,47 +190,71 @@ var VIEW = {
     VIEW.browsing();
     return "";
   },
-	krecord_handle: function(e){
+  krecord_handle: function(e){
     "use strict";
     function trim(text){
       return (text || "").replace(/^\x20+|\x20+$/g,"");
     }
 
-		var keyCode, text, object_number;
+    var keyCode, text, object_number;
     if (typeof e === "number"){keyCode = e; }
     else{
       keyCode = (window.event) ? event.keyCode : e.keyCode;
     }
-		if ((keyCode === 9) || (keyCode === 13)){
-			text = trim(document.getElementById("object_number").value);
-			if (text in VIEW.names){ object_number = text; }
-			else{ return ""; }
-		}
-		else if (keyCode === 40){
-			if (VIEW.number < (VIEW.list.length-1)){
-				VIEW.number += 1;
-				object_number = VIEW.list[VIEW.number];
-			}
-			else{ return ""; }
-		}
-		else if (keyCode === 38){
-			if (VIEW.number > 0){
-				VIEW.number -= 1;
-				object_number = VIEW.list[VIEW.number];
-			}
-			else{ return ""; }
-		}
-		else{ return ""; }
-		document.getElementById("object_number").value = object_number;
-		VIEW.display_object(object_number);
-		return "";
-	},
-	frecord_handle: function(e){
+    if ((keyCode === 9) || (keyCode === 13)){
+      text = trim(document.getElementById("object_number").value);
+      if (text in VIEW.names){ object_number = text; }
+      else{ return ""; }
+    }
+    else if (keyCode === 40){
+      if (VIEW.number < (VIEW.list.length-1)){
+        VIEW.number += 1;
+        object_number = VIEW.list[VIEW.number];
+      }
+      else{ return ""; }
+    }
+    else if (keyCode === 38){
+      if (VIEW.number > 0){
+        VIEW.number -= 1;
+        object_number = VIEW.list[VIEW.number];
+      }
+      else{ return ""; }
+    }
+    else{ return ""; }
+    document.getElementById("object_number").value = object_number;
+    VIEW.display_object(object_number);
+    return "";
+  },
+  frecord_handle: function(e){
     "use strict";
     function trim(text){
       return (text || "").replace(/^\x20+|\x20+$/g,"");
     }
-    
+
+    // match_tags returns list of object_numbers where $tags matches a list of tags
+    function match_tags(objects, candidates, tags){
+      var list, i, values, j, tag, match, k, value;
+      list = [];
+      for (i=0; i<candidates.length; i += 1){
+        if ("$tags" in objects[candidates[i]]){
+          values = objects[candidates[i]].$tags;
+          for (j=0; j<tags.length; j += 1){
+            tag = tags[j];
+            match = false;
+            for (k=0; k<values.length; k += 1){
+              value = values[k];
+              if (value === tag){
+                match = true;
+                break;
+              }
+            }
+          }
+          if (match){ list.push(candidates[i]); }
+        }
+      }
+      return list;
+    }
+          
     // match_keys returns true if all given keys match any one of a list of values
     function match_keys(values, keys){
       var i, key, match, j, value;
@@ -249,14 +273,14 @@ var VIEW = {
       return true;
     }
     
-    var keyCode, text, keywords, o, list, i, object_number, values, prop;
+    var keyCode, text, keywords, o, list, tags, keys, i, candidates, j, object_number, values, prop;
     if (typeof e === "number"){keyCode = e; }
     else{
       keyCode = (window.event) ? event.keyCode : e.keyCode;
     }
     if ( (keyCode === 9) || (keyCode === 13) ){
       VIEW.filter_input = document.getElementById("filter_box").value;
-      text = trim(VIEW.filter_input.toLowerCase());
+      text = trim(VIEW.filter_input);
       if (! text){
         document.getElementById("filter_box").value = "";
         VIEW.filter_input = "";
@@ -272,15 +296,30 @@ var VIEW = {
       keywords = text.match(/\S+/g); // one or more words separated by white space to array
       o = VIEW.collection.objects;
       list = [];
-      for (i in VIEW.full_list){
-        object_number = VIEW.full_list[i];
-        values = [];
-        for (prop in o[object_number]){
-          if (prop.charAt(0) === "$"){ values.push(o[object_number][prop].join(",").toLowerCase()); }
-          else { values.push(o[object_number][prop].toLowerCase()); }
+      tags = [];
+      keys = [];
+      for (i=0; i<keywords.length; i += 1){
+        if (keywords[i].charAt(0) === "#"){
+          tags.push(keywords[i].slice(1)); // remove # prefix
         }
-        if (match_keys(values, keywords)){ list.push(object_number); }
+        else{ keys.push(keywords[i].toLowerCase()); }
       }
+      if (tags.length > 0){
+        candidates = match_tags(o, VIEW.full_list, tags);
+      }
+      else{ candidates = VIEW.full_list; }
+      if ((candidates.length > 0) && (keys.length > 0)){
+        for (j=0; j<candidates.length; j += 1){
+          object_number = candidates[j];
+          values = [];
+          for (prop in o[object_number]){
+            if (prop.charAt(0) === "$"){ values.push(o[object_number][prop].join(",").toLowerCase()); }
+            else { values.push(o[object_number][prop].toLowerCase()); }
+          }
+          if (match_keys(values, keys)){ list.push(object_number); }
+        }
+      }
+      else{ list = candidates; }
       if (list.length >0){
         VIEW.unsorted_list = list;
         if (! VIEW.sort_property){
@@ -313,37 +352,37 @@ var VIEW = {
     return "";
   },
   // nat_sort: return text list sorted according to natural sort numerical sorting
-	nat_sort : function(list){
+  nat_sort : function(list){
     "use strict";
-		var slist, parse_string, a_, b_;
-		slist = list;
-		parse_string = /(\D*)(\d*)(\D*)(\d*)(\D*)(\d*)(\D*)(\d*)(.*)/;
-		slist.sort(function(a,b){ 
-			if (a===b) { return 0; }
-			a_ = a.match(parse_string);
-			b_ = b.match(parse_string);
-			if (a_[1]!==b_[1]) { return a_[1] < b_[1] ? -1 : 1; }
-			if (a_[2]!==b_[2]) { return (+a_[2]) - (+b_[2]); }
-			if (a_[3]!==b_[3]) { return a_[3] < b_[3] ? -1 : 1; }
-			if (a_[4]!==b_[4]) { return (+a_[4]) - (+b_[4]); }
-			if (a_[5]!==b_[5]) { return a_[5] < b_[5] ? -1 : 1; }
-			if (a_[6]!==b_[6]) { return (+a_[6]) - (+b_[6]); }
-			if (a_[7]!==b_[7]) { return a_[7] < b_[7] ? -1 : 1; }
-			if (a_[8]!==b_[8]) { return (+a_[8]) - (+b_[8]); }
-			return a_[9] < b_[9] ? -1 : 1;
-		});
-		return slist;
-	},
-	update_names: function(){
+    var slist, parse_string, a_, b_;
+    slist = list;
+    parse_string = /(\D*)(\d*)(\D*)(\d*)(\D*)(\d*)(\D*)(\d*)(.*)/;
+    slist.sort(function(a,b){ 
+      if (a===b) { return 0; }
+      a_ = a.match(parse_string);
+      b_ = b.match(parse_string);
+      if (a_[1]!==b_[1]) { return a_[1] < b_[1] ? -1 : 1; }
+      if (a_[2]!==b_[2]) { return (+a_[2]) - (+b_[2]); }
+      if (a_[3]!==b_[3]) { return a_[3] < b_[3] ? -1 : 1; }
+      if (a_[4]!==b_[4]) { return (+a_[4]) - (+b_[4]); }
+      if (a_[5]!==b_[5]) { return a_[5] < b_[5] ? -1 : 1; }
+      if (a_[6]!==b_[6]) { return (+a_[6]) - (+b_[6]); }
+      if (a_[7]!==b_[7]) { return a_[7] < b_[7] ? -1 : 1; }
+      if (a_[8]!==b_[8]) { return (+a_[8]) - (+b_[8]); }
+      return a_[9] < b_[9] ? -1 : 1;
+    });
+    return slist;
+  },
+  update_names: function(){
     "use strict";
-		var i;
-		VIEW.names = {};
-		for (i in VIEW.list){
-			VIEW.names[VIEW.list[i]] = i*1;
-		}
+    var i;
+    VIEW.names = {};
+    for (i in VIEW.list){
+      VIEW.names[VIEW.list[i]] = i*1;
+    }
     VIEW.number = 0;
-		return "";
-	},
+    return "";
+  },
   objects_sorted_list: function(filter_property){
     "use strict";
     var objects, list, i, name, prop_name, prop, prop_value, sorted_list;
