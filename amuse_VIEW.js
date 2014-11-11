@@ -1,8 +1,9 @@
 // simple amuse_json collection viewer
-// adds #tags filter
+// allows sort on properties with list values
+// fix tags filter to match #x and #y not #x or #y
 var VIEW = {
-  version : "1.2",
-  date : "2014-11-10",
+  version : "1.3",
+  date : "2014-11-11",
   album_image: -1,
   album: "",
   folder: "",
@@ -248,6 +249,7 @@ var VIEW = {
                 break;
               }
             }
+            if (! match){ break; }
           }
           if (match){ list.push(candidates[i]); }
         }
@@ -410,22 +412,19 @@ var VIEW = {
   start_sort_list: function(){
     "use strict";
     
-    // sort_properties returns list of properties with string values from objects
-    // properties with names beginning $ have array values and are not included
+    // sort_properties returns list of properties from objects
     // the list of properties is in the order of most frequent use
     function sort_properties(objects){
       var prop_counts, name, prop, list, sorted_list, i;
       prop_counts = {};
       for (name in objects){
         for (prop in objects[name]){
-          if ((prop.charAt(0) !== "$") && (objects[name][prop])){
-            if (! (prop in prop_counts)){ prop_counts[prop] = 1; }
-            else{ prop_counts[prop] += 1; }
-          }
+          if (! (prop in prop_counts)){ prop_counts[prop] = 1; }
+          else{ prop_counts[prop] += 1; }
         }
       }
       list = [];
-      for (prop in prop_counts){ list.push("_"+prop_counts[prop]+"\t"+prop); }
+      for (prop in prop_counts){list.push("_"+prop_counts[prop]+"\t"+prop); }
       list = VIEW.nat_sort(list).reverse();
       sorted_list = [];
       for (i in list){ sorted_list.push(list[i].split("\t").pop()); }
