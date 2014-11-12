@@ -1,7 +1,8 @@
 // simple amuse_json collection editor
+// if no "edition" metadata adds "edition" : "0"
 var EDIT = {
-  version : "1.1",
-  date : "2014-10-26",
+  version : "1.2",
+  date : "2014-11-12",
   original : "", // json text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -12,8 +13,8 @@ var EDIT = {
   edit_original : "",
   edit_props : "",
   edit_item : "",
-	location_from : "",
-	location_to : "",
+  location_from : "",
+  location_to : "",
   
   setup_EDIT: function(){
     "use strict";
@@ -387,6 +388,7 @@ var EDIT = {
     else{
       if (confirm("Confirm you wish to publish changes")){
         o = window.VIEW.collection;
+        if (! ("edition" in o)){ o.edition = "0"; }
         o.edition = ""+(1+parseInt(o.edition, 10));
         o.date = today();
         o.manual = "true";
