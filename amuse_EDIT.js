@@ -1,8 +1,7 @@
-// simple amuse_json collection editor
-// if no "edition" metadata adds "edition" : "0"
+// amuse_json collection editor for either HTML5 File API or node-webkit
 var EDIT = {
-  version : "1.2",
-  date : "2014-11-12",
+  version : "2.0",
+  date : "2014-11-13",
   original : "", // json text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -20,7 +19,7 @@ var EDIT = {
     "use strict";
     var headline;
     headline = document.getElementById("headline");
-    if (headline){ headline.innerHTML += " / EDITOR"; }
+    if (headline){ headline.innerHTML = "amuse-um viewer / editor"; }
     EDIT.original = JSON.stringify(window.VIEW.collection, null, "  ");
     document.getElementById("report").innerHTML = 
       "<span class=\"ebutton\" id=\"edit_button\" \"></span>"+
@@ -379,7 +378,7 @@ var EDIT = {
       return now[2]+" "+now[1]+" "+now[3];
     }
     
-    var update, o, file_name, textFileAsBlob, downloadLink;
+    var update, o, file_name, textFileAsBlob, downloadLink, report, files;
     if (EDIT.editor === "active"){return ""; }
     update = JSON.stringify(window.VIEW.collection, null, "  ");
     if (update === EDIT.original){
@@ -391,27 +390,39 @@ var EDIT = {
         if (! ("edition" in o)){ o.edition = "0"; }
         o.edition = ""+(1+parseInt(o.edition, 10));
         o.date = today();
-        o.manual = "true";
         file_name = window.VIEW.file_name+"_"+o.edition+".json";
         update = JSON.stringify(window.VIEW.collection, null, "  ");
-        textFileAsBlob = new Blob([update],{type:'text/plain'});
-        downloadLink = document.createElement("a");
-        downloadLink.download = file_name;
-        downloadLink.innerHTML = "Download File";
-        if (typeof window.webkitURL === "undefined"){
-        // Firefox requires the link to be added to the DOM before it can be clicked
-          downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-          downloadLink.onclick = EDIT.destroyClickedElement;
-          downloadLink.style.display = "none";
-          document.body.appendChild(downloadLink);
+        if (! window.FSO || !window.FSO.pwd){ // use File API
+          o.manual = "true";
+          textFileAsBlob = new Blob([update],{type:'text/plain'});
+          downloadLink = document.createElement("a");
+          downloadLink.download = file_name;
+          downloadLink.innerHTML = "Download File";
+          if (typeof window.webkitURL === "undefined"){
+          // Firefox requires the link to be added to the DOM before it can be clicked
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+            downloadLink.onclick = EDIT.destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+          }
+          else{
+          // Chrome allows the link to be clicked even when not added to the DOM
+            downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+          }
+          downloadLink.click();
         }
-        else{
-        // Chrome allows the link to be clicked even when not added to the DOM
-          downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        else{ // use node-webkit
+          o.manual = "false";
+          window.FSO.create_file(window.FSO.pwd+"json\\"+file_name, update);
+          report = window.NW.js_update(window.VIEW.file_name, o.edition);
+          if (report){ return report; }
+          files = window.VIEW.nat_sort(
+            window.NW.list_amuse_files(window.VIEW.file_name, "json\\", "json"));
+          report = window.NW.archive(files, o.edition);
+          if (report){return report; }
         }
-        downloadLink.click();
       }
-      else{ return; }
+      else{ return ""; }
     }
     EDIT.o_publish = false;
     document.getElementById("publish_button").innerHTML = "";
