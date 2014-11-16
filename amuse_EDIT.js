@@ -1,8 +1,9 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
+// separated out special cases of property editing to EDIT_fn
 var EDIT = {
-  version : "2.0",
-  date : "2014-11-13",
-  original : "", // json text for VIEW.collection
+  version : "2.1",
+  date : "2014-11-16",
+  original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
   o_edit : "", // name of object being edited
@@ -146,64 +147,64 @@ var EDIT = {
       return (text || "").replace(/^\x20+|\x20+$/g,"");
     }
     
-		var text, colon, term, list, edit_HTML, i, tlist, options, length, entry ;
-		if (EDIT.editor === "active"){ return ""; }
-		EDIT.editor = "active";
-		EDIT.edit_node = node;
-		text = node.innerHTML;
-		colon = text.indexOf(":");
-		term = trim(text.slice(0, colon));
-		EDIT.edit_item = EDIT.o_edit;
-		EDIT.edit_props = term;
-		if (term.charAt(0)==="$"){
-			if (term in window.VIEW.collection.objects[EDIT.o_edit]){
-				list = window.VIEW.collection.objects[EDIT.o_edit][term];
-			}
-			else{ list = []; }
-			edit_HTML = "<h3>edit list entry / add list entry</h3><ul>";
-			if (list.length>0){
-				for (i in list){
-					edit_HTML += "<li><input type=\"text\" id=\"edit_list"+i+"\" size=\"60\" value=\""+
-					list[i]+"\" /></li>";
-				}
-			}
-			edit_HTML += "<li><input type=\"text\" id=\"edit_list"+list.length+"\" size=\"60\" value=\"\" />"+
-				"<span class=\"ebutton\" id=\"save_button\" onclick='EDIT.save_list(event)'>SAVE</span>"+
-				"<span class=\"ebutton\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span></li></ul>";
-			document.getElementById("edit_props").innerHTML = edit_HTML;
-			document.getElementById("edit_list"+list.length).focus();
-			return "";
-		}
-		EDIT.edit_original = trim(text.slice(colon+1));
-		if (term in EDIT.term_list){
-			tlist = EDIT.term_list[term];
-			options = ["<b>Select from the "+
-				EDIT.edit_props+" list: </b><select id=\"term\" "+
-				"onchange=EDIT.save_term(term.value)>"];
-			options.push("<option value=\"none\">select a term</option>");
-			options.push("<option value=\"none\">no change</option>");
-			length = tlist.length;
-			for (i=0; i<length; i+= 1){
-				entry = tlist[i];
-				options.push("<option value=\""+entry+"\">"+entry+"</option>");
-			}
-			options.push("</select>");
-			node.innerHTML = options.join("\r\n");
-			return "";
-		}
-		if (EDIT.edit_original.length>40){
-			edit_HTML = EDIT.edit_props+": <textarea id=\"edit_box\" rows=\"6\" cols=\"80\">"+
-				EDIT.edit_original+"</textarea>";
-		}
-		else{
-			edit_HTML = EDIT.edit_props+": <input type=\"text\" id=\"edit_box\" size=\"60\" value=\""+
-				EDIT.edit_original+"\" />";
-		}
-		edit_HTML += 
-			"<span class=\"button\" id=\"save_button\" onclick='EDIT.save_edit(event)'>SAVE</span>"+
-			"<span class=\"button\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span>";
-		node.innerHTML = edit_HTML;
-		document.getElementById("edit_box").focus();
+    var text, colon, term, list, edit_HTML, i, tlist, options, length, entry ;
+    if (EDIT.editor === "active"){ return ""; }
+    EDIT.editor = "active";
+    EDIT.edit_node = node;
+    text = node.innerHTML;
+    colon = text.indexOf(":");
+    term = trim(text.slice(0, colon));
+    EDIT.edit_item = EDIT.o_edit;
+    EDIT.edit_props = term;
+    if (term.charAt(0)==="$"){
+      if (term in window.VIEW.collection.objects[EDIT.o_edit]){
+        list = window.VIEW.collection.objects[EDIT.o_edit][term];
+      }
+      else{ list = []; }
+      edit_HTML = "<h3>edit list entry / add list entry</h3><ul>";
+      if (list.length>0){
+        for (i in list){
+          edit_HTML += "<li><input type=\"text\" id=\"edit_list"+i+"\" size=\"60\" value=\""+
+          list[i]+"\" /></li>";
+        }
+      }
+      edit_HTML += "<li><input type=\"text\" id=\"edit_list"+list.length+"\" size=\"60\" value=\"\" />"+
+        "<span class=\"ebutton\" id=\"save_button\" onclick='EDIT.save_list(event)'>SAVE</span>"+
+        "<span class=\"ebutton\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span></li></ul>";
+      document.getElementById("edit_props").innerHTML = edit_HTML;
+      document.getElementById("edit_list"+list.length).focus();
+      return "";
+    }
+    EDIT.edit_original = trim(text.slice(colon+1));
+    if (term in EDIT.term_list){
+      tlist = EDIT.term_list[term];
+      options = ["<b>Select from the "+
+        EDIT.edit_props+" list: </b><select id=\"term\" "+
+        "onchange=EDIT.save_term(term.value)>"];
+      options.push("<option value=\"none\">select a term</option>");
+      options.push("<option value=\"none\">no change</option>");
+      length = tlist.length;
+      for (i=0; i<length; i+= 1){
+        entry = tlist[i];
+        options.push("<option value=\""+entry+"\">"+entry+"</option>");
+      }
+      options.push("</select>");
+      node.innerHTML = options.join("\r\n");
+      return "";
+    }
+    if (EDIT.edit_original.length>40){
+      edit_HTML = EDIT.edit_props+": <textarea id=\"edit_box\" rows=\"6\" cols=\"80\">"+
+        EDIT.edit_original+"</textarea>";
+    }
+    else{
+      edit_HTML = EDIT.edit_props+": <input type=\"text\" id=\"edit_box\" size=\"60\" value=\""+
+        EDIT.edit_original+"\" />";
+    }
+    edit_HTML += 
+      "<span class=\"button\" id=\"save_button\" onclick='EDIT.save_edit(event)'>SAVE</span>"+
+      "<span class=\"button\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span>";
+    node.innerHTML = edit_HTML;
+    document.getElementById("edit_box").focus();
     return "";
   },
   save_edit: function(ev){
@@ -282,75 +283,14 @@ var EDIT = {
   },
   save_term: function(term){
     "use strict";
-    function has_location_history(){
-      var i;
-      for (i in window.VIEW.collection.$props){
-        if (window.VIEW.collection.$props[i] === "$location_history"){
-          return true;
-        }
+    if ((term !== "none") && (term !== EDIT.edit_original)){
+      if (window.EDIT_fn && window.EDIT_fn.has_prop(EDIT.edit_props)){
+        window.EDIT_fn[EDIT.edit_props](term);
+        return "";
       }
-      return false;
+      window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = term;
+      EDIT.show_publishing();
     }
-    function today(){
-      var now;
-      now = new Date();
-      now = now.toDateString().split(" ");
-      // day month date year
-      return now[2]+" "+now[1]+" "+now[3];
-    }
-    
-		var loan, html;
-		if ((term !== "none") && (term !== EDIT.edit_original)){
-			if ((EDIT.edit_props === "current_location" ) && (has_location_history())){
-				EDIT.location_from = EDIT.edit_original;
-				EDIT.location_to = term;
-				if (term === "on loan"){ loan = "in the form <b>On loan to X until Y</b>"; }
-				else loan = "as appropriate";
-				html = "<h3>Movement Control</h3><p>Add reason for movement<br>"+loan+
-				"<ul><li>date: "+today()+"</li>"+
-				"<li>from: "+EDIT.location_from+"</li>"+
-				"<li>to: "+EDIT.location_to+"</li></ul>"+
-				"Reason: <input type=\"text\" id=\"edit_box\" size=\"60\" value=\"\" />"+
-				"<span class=\"ebutton\" id=\"save_button\" onclick='EDIT.save_reason(event)'>SAVE</span>"+
-				"<span class=\"ebutton\" id=\"cancel_button\" onclick='EDIT.cancel_edit(event)'>CANCEL</span>";
-				document.getElementById("edit_props").innerHTML = html;
-				return "";
-			}
-			window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = term;
-			EDIT.show_publishing();
-		}
-		EDIT.edit_original = "";
-		EDIT.edit_item = "";
-		EDIT.editor = "opened";
-		if (EDIT.o_edit === window.VIEW.list[window.VIEW.number]){
-			window.VIEW.display_object(EDIT.o_edit);
-		}
-		EDIT.edit_group(EDIT.o_group);
-    return "";
-  },
-  save_reason: function(ev){
-    "use strict";
-    function today(){
-      var now;
-      now = new Date();
-      now = now.toDateString().split(" ");
-      // day month date year
-      return now[2]+" "+now[1]+" "+now[3];
-    }
-    
-    var o, node, reason;
-    ev.stopPropagation();
-    o = window.VIEW.collection.objects[EDIT.o_edit];
-    node = document.getElementById("edit_box");
-    reason = EDIT.rinse(node.value);
-    o.current_location = EDIT.location_to;
-    if (! ("$location_history" in o)){o.$location_history = []; }
-    o.$location_history.push("date: "+today()+",from: "+EDIT.location_from+
-      ",to: "+EDIT.location_to+",reason: "+reason);
-    if (EDIT.location_to === "on loan"){ o.exhibit_note = reason; }
-    else if (EDIT.location_to.search("store") === 0){o.exhibit_note = "stored"; }
-    else{o.exhibit_note = "displayed"; }
-    EDIT.show_publishing();
     EDIT.edit_original = "";
     EDIT.edit_item = "";
     EDIT.editor = "opened";
@@ -359,7 +299,7 @@ var EDIT = {
     }
     EDIT.edit_group(EDIT.o_group);
     return "";
-  },  
+  },
   show_publishing: function(){
     "use strict";
     if (EDIT.o_publish){ return ""; }
