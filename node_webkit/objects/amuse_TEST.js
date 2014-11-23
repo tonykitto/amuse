@@ -1,6 +1,6 @@
-{
-  "edition": "3",
-  "date": "04 Oct 2014",
+var amuse_TEST = {
+  "edition": "4",
+  "date": "13 Nov 2014",
   "objects": {
     "Test1": {
       "briefly": "Test object one",
@@ -44,6 +44,12 @@
       "normal_location": "store",
       "current_location": "store",
       "exhibit_note": "stored"
+    },
+    "Test6": {
+      "briefly": "test updated amuse_edit module",
+      "$tags": [
+        "SwTest"
+      ]
     }
   },
   "name": "amuse_um TEST collection",
@@ -135,4 +141,4 @@
     "exit_reference_number"
   ],
   "manual": "false"
-}
+};
