@@ -1,6 +1,7 @@
 // CSV to amuse_JSON
+// 2014-09-29 v0.1 no longer includes primary key from $props
 var CSV = {
-  version : "0.0",
+  version : "0.1",
   csv_split: function(str){
     "use strict";
     function unquote(text){ // remove all quotes used to create the CSV string
@@ -88,7 +89,8 @@ var CSV = {
     "use strict";
 // expects file lines separated by CRLF or LF with comma separated headers on line 0
 // keys in header must be between 1 and 80 characters in length
-    var lines, line_count, headers, header_count, i, rows, j, key, line, row, pkey, json;
+    var lines, line_count, headers, header_count, i,
+    rows, j, key, line, row, pkey, json, header1, k;
     lines = text.split("\r\n");
     if (lines.length<2){lines = text.split("\n"); }
     line_count = lines.length;
@@ -122,6 +124,14 @@ var CSV = {
     if (typeof json === "string"){return json; }
     CSV.result = {};
     CSV.result.objects = json;
+    // do not include the primary key in the copy of the headers list 
+    if (pkey){
+      header1 = [];
+      for (k in headers){
+        if (headers[k] !== pkey){ header1.push(headers[k]); }
+      }
+      headers = header1;
+    }
     CSV.result.$props = headers;
     CSV.result.$groups = ["$props"];
     return CSV.result;
