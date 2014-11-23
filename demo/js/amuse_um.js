@@ -1,12 +1,18 @@
-// support for simple web API 
+// support for simple web API
+// collects author initials for editing
 var amuse_um = {
-	version : "4.3",
-	date : "2014-10-31",
+	version : "4.4",
+	date : "2014-11-21",
 	session_init: function(coll, query){
     "use strict";
     var event;
     if (window.EDIT && ("setup_EDIT" in window.EDIT)){
-      if (! query){ window.VIEW.editor = window.EDIT.setup_EDIT; }
+      if (! query){
+        window.VIEW.author = prompt("Add initials for editing");
+        if (window.VIEW.author){
+          window.VIEW.editor = window.EDIT.setup_EDIT;
+        }
+      }
     }
     window.VIEW.file_name = coll;
     window.VIEW.start_VIEW(window[coll]);
