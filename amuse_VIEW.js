@@ -1,9 +1,9 @@
 // simple amuse_json collection viewer
-// allows sort on properties with list values
-// fix tags filter to match #x and #y not #x or #y
+// adds author initials for editing, link changed from web to ../DOCS
 var VIEW = {
-  version : "1.3",
-  date : "2014-11-11",
+  version : "1.4",
+  date : "2014-11-23",
+  author: "",
   album_image: -1,
   album: "",
   folder: "",
@@ -52,7 +52,7 @@ var VIEW = {
         html = [];
         for (i in list){
           link = list[i];
-          html.push("<li><a target=\"_blank\" href=\"web/"+ref+".html?"+link+"\">"+link+"</a></li>");
+          html.push("<li><a target=\"_blank\" href=\"../DOCS/"+ref+".html?"+link+"\">"+link+"</a></li>");
         }
         return html.join(" ");
       }
