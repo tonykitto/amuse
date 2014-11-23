@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// separated out special cases of property editing to EDIT_fn
+// simplified publishing with node-webkit
 var EDIT = {
-  version : "2.1",
-  date : "2014-11-16",
+  version : "2.2",
+  date : "2014-11-23",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -318,7 +318,7 @@ var EDIT = {
       return now[2]+" "+now[1]+" "+now[3];
     }
     
-    var update, o, file_name, textFileAsBlob, downloadLink, report, files;
+    var update, o, file_name, textFileAsBlob, downloadLink, report;
     if (EDIT.editor === "active"){return ""; }
     update = JSON.stringify(window.VIEW.collection, null, "  ");
     if (update === EDIT.original){
@@ -330,6 +330,7 @@ var EDIT = {
         if (! ("edition" in o)){ o.edition = "0"; }
         o.edition = ""+(1+parseInt(o.edition, 10));
         o.date = today();
+        o.author = window.VIEW.author;
         file_name = window.VIEW.file_name+"_"+o.edition+".json";
         update = JSON.stringify(window.VIEW.collection, null, "  ");
         if (! window.FSO || !window.FSO.pwd){ // use File API
@@ -353,16 +354,13 @@ var EDIT = {
         }
         else{ // use node-webkit
           o.manual = "false";
-          window.FSO.create_file(window.FSO.pwd+"json\\"+file_name, update);
-          report = window.NW.js_update(window.VIEW.file_name, o.edition);
-          if (report){ return report; }
-          files = window.VIEW.nat_sort(
-            window.NW.list_amuse_files(window.VIEW.file_name, "json\\", "json"));
-          report = window.NW.archive(files, o.edition);
+          window.FSO.create_file(window.FSO.pwd+"objects/"+window.VIEW.file_name+".js",
+            "var "+window.VIEW.file_name+" = "+update+";\n");
+          report = window.NW.archive(window.VIEW.file_name, o);
           if (report){return report; }
         }
       }
-      else{ return ""; }
+      return "";
     }
     EDIT.o_publish = false;
     document.getElementById("publish_button").innerHTML = "";
