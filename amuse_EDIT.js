@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// simplified publishing with node-webkit
+// bug fix for publish manual is true
 var EDIT = {
-  version : "2.2",
-  date : "2014-11-23",
+  version : "2.3",
+  date : "2014-11-24",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -331,10 +331,11 @@ var EDIT = {
         o.edition = ""+(1+parseInt(o.edition, 10));
         o.date = today();
         o.author = window.VIEW.author;
+        o.manual = "true";
         file_name = window.VIEW.file_name+"_"+o.edition+".json";
         update = JSON.stringify(window.VIEW.collection, null, "  ");
         if (! window.FSO || !window.FSO.pwd){ // use File API
-          o.manual = "true";
+         
           textFileAsBlob = new Blob([update],{type:'text/plain'});
           downloadLink = document.createElement("a");
           downloadLink.download = file_name;
