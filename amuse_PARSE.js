@@ -1,7 +1,7 @@
 var amuse_PARSE = function () {
-// This is a function parses a sub-set of JSON text, producing 
-// a JavaScript data structure. It is based on Douglas Crockford's JSOn parser
-// in JavaScript: The Good Parts .
+// This is a function that parses a defined sub-set of JSON text, producing 
+// an amuse_um JavaScript data structure that only allows non-empty string values.
+// It is based on Douglas Crockford's JSOn parser in JavaScript: The Good Parts.
 "use strict";
 var at,   // The index of the current character
   line,
@@ -151,7 +151,7 @@ var at,   // The index of the current character
         next(']');
         is_array = false;
         current_key = "";
-        return array;   // empty array
+        return array;  // empty array
       }
       while (ch) {
         array.push(value());
@@ -216,11 +216,14 @@ var at,   // The index of the current character
   value = function () {
     // Parse a JSON value. It could be an object or an array or a string.
     // amuse_um does not allow numbers or the words true, false and null.
+    var part;
     white();
     switch (ch) {
       case '{': return object();
       case '[': return array();
-      case '"': return string();
+      case '"': part = string();
+                if (part.length === 0){ error("empty string"); }
+                return part;
       case '-': return number();
       default:
         return ch >= '0' && ch <= '9' ? number() : word();

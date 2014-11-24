@@ -21,29 +21,30 @@ var TEST = {
     "{\"x\" : \"y\"}\n", // test13
     "{\"x\" : \"y\",}\n", // test14
     "{\"$x\" : \"y\"}\n", // test 15
-    "{\"$x\" : []}\n", // test16
+    "{\"x\" : \"\"}\n", // test 16
+    "{\"$x\" : []}\n", // test17
     "{\"$x\" : [\"y\"]}\n", // test 17
-    "{\"$x\" : [\"y\",]}\n", // test 18
-    "{\"$x\" : [[\"y\"]]}\n", // test 19
-    "{\"$x\" : [{\"x\" : \"y\"}]}\n", // test 20
+    "{\"$x\" : [\"y\",]}\n", // test 19
+    "{\"$x\" : [[\"y\"]]}\n", // test 20
+    "{\"$x\" : [{\"x\" : \"y\"}]}\n", // test 21
     // objects level tests
-    "{\"objects\": {}}\n", // test21
-    "{\"objects\": \"y\"}\n", // test22
-    "{\"objects\": [\"y\"]}\n", // test23
-    "{\"objects\": {\"x\" : \"y\"}\n},", // test 24
-    "{\"objects\": {\"x\" : [\"y\"]}\n", // test 25
-    "{\"objects\": {\"x\" : {}}\n", // test 26
-    "{\"objects\": {\"x\" : {\"x\" : \"y\"}}}\n", // test 27
-    "{\"objects\": {\"x\" : {\"x\" : \"y\"},}}\n", // test 28
-    "{\"objects\": {\n\"x\" : {\"x\" : \"y\",\"x\" : \"y\"}\n}\n}\n", // test 29
-    "{\"objects\": {\n\"x\" : {\"$x\" : [\"y\"]}\n}\n}\n", // test 30
-    "{\"objects\": {\n\"x\" : {\"$x\" : \"y\"}\n}\n}\n", // test 31
-    "{\"objects\": {\n\"x\" : {\"x\" : \"y\"}\n},\n}\n", // test 32
-    "{\"objects\": {\n\"x\" : {\"x\" : \"y\"},\n\"x1\" : {\"x\" : \"y\"}\n}\n}", //test 33
+    "{\"objects\": {}}\n", // test22
+    "{\"objects\": \"y\"}\n", // test23
+    "{\"objects\": [\"y\"]}\n", // test24
+    "{\"objects\": {\"x\" : \"y\"}\n},", // test 25
+    "{\"objects\": {\"x\" : [\"y\"]}\n", // test 26
+    "{\"objects\": {\"x\" : {}}\n", // test 27
+    "{\"objects\": {\"x\" : {\"x\" : \"y\"}}}\n", // test 28
+    "{\"objects\": {\"x\" : {\"x\" : \"y\"},}}\n", // test 29
+    "{\"objects\": {\n\"x\" : {\"x\" : \"y\",\"x\" : \"y\"}\n}\n}\n", // test 30
+    "{\"objects\": {\n\"x\" : {\"$x\" : [\"y\"]}\n}\n}\n", // test 31
+    "{\"objects\": {\n\"x\" : {\"$x\" : \"y\"}\n}\n}\n", // test 32
+    "{\"objects\": {\n\"x\" : {\"x\" : \"y\"}\n},\n}\n", // test 33
+    "{\"objects\": {\n\"x\" : {\"x\" : \"y\"},\n\"x1\" : {\"x\" : \"y\"}\n}\n}", //test 34
     // amuse_um extra tests
-    "{\"\" : \"y\"}", // test 34
-    "{\"x\" : \"y\",\n\"objects\" : {\"x\" : {\"x\" : \"y\"}\n},\n\"x1\" : \"y\"}\n", //test 35
-    // short multi-line test 36
+    "{\"\" : \"y\"}", // test 35
+    "{\"x\" : \"y\",\n\"objects\" : {\"x\" : {\"x\" : \"y\"}\n},\n\"x1\" : \"y\"}\n", //test 36
+    // short multi-line test 37
     "{\"name\": \"set of tests for amuse_PARSE\",\n"+
     "\"$props\": [\"test\",\"$list\",\"apple\",\"orange\"],\n"+
     "\"$groups\": [\"$basic\", \"$fruit\"],\n"+
@@ -98,41 +99,43 @@ var TEST = {
       "Bad string at line 1 : {\"x\" : \"y\",}",
     "SyntaxError : "+ // test 15 value is invalid string 
       "key starting with $ requires an array value at line 1 : {\"$x\" : \"y\"}",
-    "test16 is valid object", // test 16 valid meta-data $key with empty array
-    "test17 is valid object", // test 17 valid meta-data $key with non-empty array
-    "SyntaxError : "+ // test 18 invalid trailing comma
+    "SyntaxError : "+ // test 16 value is empty string
+      "empty string at line 1 : {\"x\" : \"\"}",
+    "test17 is valid object", // test 13 valid empty array
+    "test18 is valid object", // test 18 valid meta-data $key with non-empty array
+    "SyntaxError : "+ // test 19 invalid trailing comma
       "Unexpected ']' at line 1 : {\"$x\" : [\"y\",]}",
-    "SyntaxError : "+ // test 19 invalid array value - array
+    "SyntaxError : "+ // test 20 invalid array value - array
       "no array allowed within array at line 1 : {\"$x\" : [[\"y\"]]}",
-    "SyntaxError : "+ // test 20 invalid array value - object
+    "SyntaxError : "+ // test 21 invalid array value - object
       "no object allowed within array at line 1 : {\"$x\" : [{\"x\" : \"y\"}]}",
-    "SyntaxError : "+ // test 21 objects object is empty
+    "SyntaxError : "+ // test 22 objects object is empty
       "no empty objects in amuse_um at line 1 : {\"objects\": {}}",
-    "SyntaxError : "+ // test 22 invalid objects value - string
+    "SyntaxError : "+ // test 23 invalid objects value - string
       "'objects' key only used for objects at line 1 : {\"objects\": \"y\"}",
-    "SyntaxError : "+ // test 23 invalid objects value - array
+    "SyntaxError : "+ // test 24 invalid objects value - array
       "only keys starting with $ may have an array value at line 1 : {\"objects\": [\"y\"]}",
-    "SyntaxError : "+ // test 24 'objects' object value must be an object not a string
+    "SyntaxError : "+ // test 25 'objects' object value must be an object not a string
       "only 'objects' key allowed object value at line 1 : {\"objects\": {\"x\" : \"y\"}",
-    "SyntaxError : "+ // test 25 'objects' object value must be an object not an array
+    "SyntaxError : "+ // test 26 'objects' object value must be an object not an array
       "objects level objects only at line 1 : {\"objects\": {\"x\" : [\"y\"]}",
-    "SyntaxError : "+ // test 26 'objects' object value must not be an empty object
+    "SyntaxError : "+ // test 27 'objects' object value must not be an empty object
       "no empty objects in amuse_um at line 1 : {\"objects\": {\"x\" : {}}",
-    "test27 is valid object", // test 27 valid objects object value valid properties object
-    "SyntaxError : "+ // test 28 invalid trailing comma
+    "test28 is valid object", // test 28 valid objects object value valid properties object
+    "SyntaxError : "+ // test 29 invalid trailing comma
       "Bad string at line 1 : {\"objects\": {\"x\" : {\"x\" : \"y\"},}}",
-    "SyntaxError : "+ // test 29 duplicate property key
+    "SyntaxError : "+ // test 30 duplicate property key
       "Duplicate key \"x\" at line 2 : \"x\" : {\"x\" : \"y\",\"x\" : \"y\"}",
-    "test30 is valid object", // test 30 object properties object with valid array value
-    "SyntaxError : "+ // test 31 object properties object with invalid string value
+    "test31 is valid object", // test 31 object properties object with valid array value
+    "SyntaxError : "+ // test 32 object properties object with invalid string value
       "key starting with $ requires an array value at line 2 : \"x\" : {\"$x\" : \"y\"}",
-    "SyntaxError : "+ // test 32 invalid trailing comma
+    "SyntaxError : "+ // test 33 invalid trailing comma
       "Bad string at line 4 : }",
-    "test33 is valid object", // test 33 object properties values valid
-    "SyntaxError : "+ // test 34 invalid empty key
+    "test34 is valid object", // test 34 object properties values valid
+    "SyntaxError : "+ // test 35 invalid empty key
       "empty key invalid in amuse_um at line 1 : {\"\" : \"y\"",
-    "test35 is valid object", // test 35 valid meta-data following after 'objects'
-    "test36 is valid object" // test 36 valid multi-object text
+    "test36 is valid object", // test 36 valid meta-data following after 'objects'
+    "test37 is valid object" // test 37 valid multi-object text
   ],
   "basic_testing" : true,
   amuse : {},
