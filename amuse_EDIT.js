@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// bug fix for publish manual is true
+// bug fixes for publish, discard and object choice
 var EDIT = {
-  version : "2.3",
-  date : "2014-11-24",
+  version : "2.4",
+  date : "2014-11-26",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -319,7 +319,7 @@ var EDIT = {
     }
     
     var update, o, file_name, textFileAsBlob, downloadLink, report;
-    if (EDIT.editor === "active"){return ""; }
+    if (EDIT.editor === "active" || EDIT.editor === "opened"){return ""; }
     update = JSON.stringify(window.VIEW.collection, null, "  ");
     if (update === EDIT.original){
       alert("The result of all the changes have been cancelled out - no changes");
@@ -377,6 +377,7 @@ var EDIT = {
   }, 
   discard: function(){
     "use strict";
+    if (EDIT.editor === "active" || EDIT.editor === "opened"){return ""; }
     if (confirm("Confirm you wish to discard changes")){
       window.VIEW.collection = JSON.parse(EDIT.original);
       window.VIEW.start_VIEW(window.VIEW.collection);
@@ -428,8 +429,8 @@ var EDIT = {
     var first_property;
     EDIT.editor = "closed";
     EDIT.show_editor();
-    EDIT.show_publishing();
     if (object_name){
+      EDIT.show_publishing();
       window.VIEW.collection.objects[object_name] = {};
       first_property = window.VIEW.collection.$props[0];   
       window.VIEW.collection.objects[object_name][first_property] = "entry to be added here";
