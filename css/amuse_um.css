@@ -31,10 +31,10 @@ span.button {margin-left: 20px; color: navy; background: #eee; }
 span#edit_button {color: red; }
 span#add_button {color: green; }
 span#publish_button {color: blue; background: #fff; }
-span#discard_button {color: navy; background: #fff; }
+span#discard_button {color: purple; background: #fff; }
 li.editable {color: black; list-style-type: circle; cursor: pointer; min-height: 30px; }
 li {display: block; }
 span.header {color: blue; cursor: pointer; margin: 20px; width: 80px; }
 #footer {border-top: 1px solid #000000; clear: both; margin-left: 20px; padding-top: 10px;}
-#cursor{text-align: right; }
-
+#cursor {text-align: right; }
+h3.list_entry {color: blue; }
