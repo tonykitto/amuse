@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// bug fixes for publish, discard and object choice
+// UI highlights differences when saving files with HTML5 File API or node-webkit
 var EDIT = {
-  version : "2.4",
-  date : "2014-11-26",
+  version : "2.5",
+  date : "2014-11-28",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -161,7 +161,7 @@ var EDIT = {
         list = window.VIEW.collection.objects[EDIT.o_edit][term];
       }
       else{ list = []; }
-      edit_HTML = "<h3>edit list entry / add list entry</h3><ul>";
+      edit_HTML = "<h3 class=list_entry>"+term+": edit list entry / add list entry</h3><ul>";
       if (list.length>0){
         for (i in list){
           edit_HTML += "<li><input type=\"text\" id=\"edit_list"+i+"\" size=\"60\" value=\""+
@@ -302,9 +302,11 @@ var EDIT = {
   },
   show_publishing: function(){
     "use strict";
+    var keep;
     if (EDIT.o_publish){ return ""; }
     EDIT.o_publish = true;
-    document.getElementById("publish_button").innerHTML = "PUBLISH?";
+    if (window.FSO){ keep = "COMMIT?"; } else{ keep = "SAVE JSON TO FILE?"; }
+    document.getElementById("publish_button").innerHTML = keep;
     document.getElementById("discard_button").innerHTML = "DISCARD?";
     return "";
   },
@@ -318,14 +320,15 @@ var EDIT = {
       return now[2]+" "+now[1]+" "+now[3];
     }
     
-    var update, o, file_name, textFileAsBlob, downloadLink, report;
+    var update, keep, o, file_name, textFileAsBlob, downloadLink, report;
     if (EDIT.editor === "active" || EDIT.editor === "opened"){return ""; }
     update = JSON.stringify(window.VIEW.collection, null, "  ");
     if (update === EDIT.original){
       alert("The result of all the changes have been cancelled out - no changes");
     }
     else{
-      if (confirm("Confirm you wish to publish changes")){
+      if (window.FSO){ keep = "commit changes for next edition"; } else{ keep = "save changes to a local file"; }
+      if (confirm("Confirm you wish to "+keep)){
         o = window.VIEW.collection;
         if (! ("edition" in o)){ o.edition = "0"; }
         o.edition = ""+(1+parseInt(o.edition, 10));
