@@ -23,7 +23,7 @@ var TEST = {
     "{\"$x\" : \"y\"}\n", // test 15
     "{\"x\" : \"\"}\n", // test 16
     "{\"$x\" : []}\n", // test17
-    "{\"$x\" : [\"y\"]}\n", // test 17
+    "{\"$x\" : [\"y\"]}\n", // test 18
     "{\"$x\" : [\"y\",]}\n", // test 19
     "{\"$x\" : [[\"y\"]]}\n", // test 20
     "{\"$x\" : [{\"x\" : \"y\"}]}\n", // test 21
@@ -101,7 +101,7 @@ var TEST = {
       "key starting with $ requires an array value at line 1 : {\"$x\" : \"y\"}",
     "SyntaxError : "+ // test 16 value is empty string
       "empty string at line 1 : {\"x\" : \"\"}",
-    "test17 is valid object", // test 13 valid empty array
+    "test17 is valid object", // test 17 valid empty array
     "test18 is valid object", // test 18 valid meta-data $key with non-empty array
     "SyntaxError : "+ // test 19 invalid trailing comma
       "Unexpected ']' at line 1 : {\"$x\" : [\"y\",]}",
