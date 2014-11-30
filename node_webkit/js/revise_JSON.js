@@ -1,7 +1,8 @@
 // amuse_um revision control
+// check latest edition matches archive
 var REV = {
-  version : "1.1",
-  date : "2014-11-28",
+  version : "1.2a", // node_webkit demo
+  date : "2014-11-30",
   file_name : "",
   archive_name : "",
   archive : {},
@@ -179,7 +180,7 @@ var REV = {
       "Version "+REV.version+" ["+REV.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um\\";
+    window.FSO.pwd += "node_webkit/";
   },
   checks: function(evt){
     "use strict";
@@ -226,7 +227,7 @@ var REV = {
       return "";
     }
     
-    var file, error_line, check, current_file, text, archive_file,
+    var file, error_line, check, current_file, text, archive_file, list, key,
       valid_props, i, mandatory, obj, prop;
     file = evt.target.result;
     try{    
@@ -244,7 +245,7 @@ var REV = {
     }
     REV.base =parseInt(REV.update.edition, 10)-1;
     if (REV.base < 1){
-      return REV.file_name+" edition "+REV.update.edition+" is not valid";
+      return REV.file_name+" edition "+REV.update.edition+" must be greater than 1";
     }
     if (! ("name" in REV.update)){
       return "The selected JSON file "+REV.file_name+" is missing its name property";
@@ -260,6 +261,10 @@ var REV = {
     text = text.slice(text.indexOf("{"));
     REV.current = JSON.parse(text);
     REV.latest = parseInt(REV.current.edition, 10);
+    if (REV.latest < REV.base){
+      return REV.file_name+" edition "+REV.update.edition+
+        " is more than the base edition +1";
+    }
     if (REV.update.name !== REV.current.name){
       return "The selected JSON file "+REV.file_name+" name does not match";
     }
@@ -268,6 +273,11 @@ var REV = {
       return "Missing "+archive_file;
     }
     REV.archive = JSON.parse(window.FSO.read_file(archive_file));
+    list = [];
+    for (key in REV.archive.meta){ list.push(key); }
+    if (REV.latest !== list.length){
+      return "Cannot complete revision, latest edition does not match archive";
+    }
     valid_props = {};
     for (i=0; i<REV.update.$props.length; i += 1){
       valid_props[REV.update.$props[i]] = true;

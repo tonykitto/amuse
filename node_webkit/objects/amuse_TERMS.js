@@ -1,7 +1,6 @@
 var amuse_TERMS = {
-  "version": "4",
   "edition": "1",
-  "date": "04 Oct 2014",
+  "date": "19 May 2014",
   "objects": {
     "terms": {
       "$terms_normal_location": [
@@ -151,9 +150,9 @@ var amuse_TERMS = {
     "$terms_normal_location",
     "$terms_current_location",
     "$terms_acquisition_method",
-    "$terms_condition",
     "$terms_disposal_method",
-    "$terms_FUAN.simple_name"
+    "$terms_FUAN.simple_name",
+    "$terms_!condition"
   ],
   "$groups": [
     "$identity",
@@ -172,8 +171,8 @@ var amuse_TERMS = {
     "$terms_normal_location",
     "$terms_current_location",
     "$terms_acquisition_method",
-    "$terms_condition",
     "$terms_disposal_method",
-    "$terms_FUAN.simple_name"
+    "$terms_FUAN.simple_name",
+    "$terms_!condition"
   ]
 };

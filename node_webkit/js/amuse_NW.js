@@ -89,7 +89,7 @@ var NW = {
       "Version "+NW.version+" ["+NW.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um/node_webkit/";
+    window.FSO.pwd += "node_webkit/";
     window.VIEW.author = prompt("Add initials for editing");
     if (window.VIEW.author){ window.VIEW.editor = window.EDIT.setup_EDIT; }
     else{ document.getElementById("headline").innerHTML = "amuse-um viewer only"; }

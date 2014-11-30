@@ -78,45 +78,7 @@
     },
     "3": {
       "author": "tk",
-      "date": "04 Oct 2014",
-      "name": "amuse_um TEST collection",
-      "$props": [
-        "briefly",
-        "has_parts",
-        "part_of",
-        "oef_number",
-        "acquisition_method",
-        "donor",
-        "acquisition_date",
-        "credit_line",
-        "image",
-        "current_location",
-        "normal_location",
-        "$location_history",
-        "exhibit_note",
-        "location_reservation",
-        "$doc_links",
-        "disposal_date",
-        "disposal_method",
-        "disposal_note",
-        "disposal_reference_number",
-        "exit_reference_number",
-        "$tags",
-        "dimensions",
-        "condition_note",
-        "condition",
-        "description_note",
-        "production_note",
-        "creator",
-        "artist_note",
-        "place_made",
-        "content_summary",
-        "$characters"
-      ]
-    },
-    "4": {
-      "author": "tk",
-      "date": "13 Nov 2014",
+      "date": "30 Nov 2014",
       "name": "amuse_um TEST collection",
       "$props": [
         "briefly",
@@ -235,14 +197,6 @@
       ],
       "exhibit_note": [
         "2:stored"
-      ]
-    },
-    "Test6": {
-      "briefly": [
-        "4:test updated amuse_edit module"
-      ],
-      "$tags": [
-        "4:SwTest"
       ]
     }
   }

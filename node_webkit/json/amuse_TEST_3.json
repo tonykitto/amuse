@@ -1,7 +1,6 @@
-var amuse_TEST = {
+{
   "edition": "3",
-  "date": "30 Nov 2014",
-  "author": "tk",
+  "date": "04 Oct 2014",
   "objects": {
     "Test1": {
       "briefly": "Test object one",
@@ -135,5 +134,5 @@ var amuse_TEST = {
     "disposal_reference_number",
     "exit_reference_number"
   ],
-  "manual": "true"
-};
+  "manual": "false"
+}
