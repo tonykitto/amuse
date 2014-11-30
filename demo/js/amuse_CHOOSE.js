@@ -52,6 +52,9 @@ var CHOOSE = {
     if (! ("edition" in window.VIEW.collection)){
       window.VIEW.collection.edition = "0";
     }
+    if (window.EDIT && ("setup_EDIT" in window.EDIT)){
+      window.VIEW.editor = window.EDIT.setup_EDIT;
+    }
     window.VIEW.start_VIEW(window.VIEW.collection);
     return "";
   },
