@@ -1,5 +1,5 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// UI highlights differences when saving files with HTML5 File API or node-webkit
+// bug fix - close editor after publish or discard
 var EDIT = {
   version : "2.5",
   date : "2014-11-28",
@@ -364,7 +364,6 @@ var EDIT = {
           if (report){return report; }
         }
       }
-      return "";
     }
     EDIT.o_publish = false;
     document.getElementById("publish_button").innerHTML = "";
@@ -423,8 +422,6 @@ var EDIT = {
     }
     select += "<option value=\"\">none</options>";
     document.getElementById("editor").innerHTML = select+"</select><p>";
-
-    
     return "";
   },
   object_choice: function(object_name){
