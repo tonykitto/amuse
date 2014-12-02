@@ -1,7 +1,6 @@
 var amuse_TEST = {
-  "edition": "3",
-  "date": "30 Nov 2014",
-  "author": "tk",
+  "edition": "6",
+  "date": "01 Dec 2014",
   "objects": {
     "Test1": {
       "briefly": "Test object one",
@@ -45,6 +44,18 @@ var amuse_TEST = {
       "normal_location": "store",
       "current_location": "store",
       "exhibit_note": "stored"
+    },
+    "Test6": {
+      "briefly": "test updated amuse_edit module",
+      "$tags": [
+        "SwTest"
+      ]
+    },
+    "Test7": {
+      "briefly": "Test for SYNC module"
+    },
+    "Test8": {
+      "briefly": "Testing new archive"
     }
   },
   "name": "amuse_um TEST collection",
@@ -135,5 +146,6 @@ var amuse_TEST = {
     "disposal_reference_number",
     "exit_reference_number"
   ],
-  "manual": "true"
+  "manual": "true",
+  "author": "tk"
 };

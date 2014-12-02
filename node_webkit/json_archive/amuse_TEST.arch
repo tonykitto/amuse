@@ -2,7 +2,7 @@
   "meta": {
     "1": {
       "author": "tk",
-      "date": "04 Oct 2014",
+      "date": "25 Nov 2014",
       "name": "amuse_um TEST collection",
       "$props": [
         "briefly",
@@ -36,83 +36,82 @@
         "place_made",
         "content_summary",
         "$characters"
-      ]
+      ],
+      "$groups": [
+        "$identity",
+        "$description",
+        "$location",
+        "$production",
+        "$acquisition",
+        "$other_info",
+        "$disposal"
+      ],
+      "$identity": [
+        "briefly",
+        "has_parts",
+        "part_of"
+      ],
+      "$description": [
+        "content_summary",
+        "dimensions",
+        "condition_note",
+        "condition",
+        "description_note",
+        "$doc_links"
+      ],
+      "$location": [
+        "current_location",
+        "normal_location",
+        "$location_history",
+        "exhibit_note",
+        "location_reservation"
+      ],
+      "$production": [
+        "production_note",
+        "creator",
+        "artist_note",
+        "place_made"
+      ],
+      "$acquisition": [
+        "oef_number",
+        "acquisition_method",
+        "donor",
+        "acquisition_date",
+        "credit_line"
+      ],
+      "$other_info": [
+        "$characters",
+        "image",
+        "$tags"
+      ],
+      "$disposal": [
+        "disposal_date",
+        "disposal_method",
+        "disposal_note",
+        "disposal_reference_number",
+        "exit_reference_number"
+      ],
+      "manual": "false"
     },
     "2": {
       "author": "tk",
-      "date": "04 Oct 2014",
-      "name": "amuse_um TEST collection",
-      "$props": [
-        "briefly",
-        "has_parts",
-        "part_of",
-        "oef_number",
-        "acquisition_method",
-        "donor",
-        "acquisition_date",
-        "credit_line",
-        "image",
-        "current_location",
-        "normal_location",
-        "$location_history",
-        "exhibit_note",
-        "location_reservation",
-        "$doc_links",
-        "disposal_date",
-        "disposal_method",
-        "disposal_note",
-        "disposal_reference_number",
-        "exit_reference_number",
-        "$tags",
-        "dimensions",
-        "condition_note",
-        "condition",
-        "description_note",
-        "production_note",
-        "creator",
-        "artist_note",
-        "place_made",
-        "content_summary",
-        "$characters"
-      ]
+      "date": "04 Oct 2014"
     },
     "3": {
       "author": "tk",
-      "date": "30 Nov 2014",
-      "name": "amuse_um TEST collection",
-      "$props": [
-        "briefly",
-        "has_parts",
-        "part_of",
-        "oef_number",
-        "acquisition_method",
-        "donor",
-        "acquisition_date",
-        "credit_line",
-        "image",
-        "current_location",
-        "normal_location",
-        "$location_history",
-        "exhibit_note",
-        "location_reservation",
-        "$doc_links",
-        "disposal_date",
-        "disposal_method",
-        "disposal_note",
-        "disposal_reference_number",
-        "exit_reference_number",
-        "$tags",
-        "dimensions",
-        "condition_note",
-        "condition",
-        "description_note",
-        "production_note",
-        "creator",
-        "artist_note",
-        "place_made",
-        "content_summary",
-        "$characters"
-      ]
+      "date": "04 Oct 2014"
+    },
+    "4": {
+      "author": "tk",
+      "date": "13 Nov 2014"
+    },
+    "5": {
+      "author": "tk",
+      "date": "25 Nov 2014"
+    },
+    "6": {
+      "author": "tk",
+      "date": "01 Dec 2014"
     }
   },
   "objects": {
@@ -197,6 +196,24 @@
       ],
       "exhibit_note": [
         "2:stored"
+      ]
+    },
+    "Test6": {
+      "briefly": [
+        "4:test updated amuse_edit module"
+      ],
+      "$tags": [
+        "4:SwTest"
+      ]
+    },
+    "Test7": {
+      "briefly": [
+        "5:Test for SYNC module"
+      ]
+    },
+    "Test8": {
+      "briefly": [
+        "6:Testing new archive"
       ]
     }
   }
