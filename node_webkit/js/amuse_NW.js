@@ -1,11 +1,29 @@
 // Towneley amuse_um collection editor / archive function
+// archive now includes full metadata archive
 var NW = {
-  version : "1.0",
-  date : "2014-11-22",
+  version : "1.1",
+  date : "2014-12-02",
   object : {},
   // adds latest collection property values to the existing archive file
   update_archive: function(collection, archive, update){
     "use strict";
+    function get_meta(archive){
+      var meta, list, count, i, key, edition;
+      meta = archive.meta["1"];
+      list = [];
+      for (key in archive.meta){ list.push(key); }
+      count = list.length;
+      if (count > 1){
+        for (i=2; i<= count; i += 1){
+          edition = archive.meta[i.toString()];
+          for (key in edition){
+            if (edition[key] !== ""){ meta[key] = edition[key]; }
+            else{ delete meta[key]; }
+          }
+        }
+      }
+      return meta;
+    }
     function last_value(list){
       var value, colon;
       value = list[list.length-1];
@@ -14,13 +32,41 @@ var NW = {
       return value;
     }
       
-    var edition, obj, prop, value, latest;
+    var edition, current_meta, key, obj, prop, value, latest;
     edition = update.edition;
+    if (update.manual){ current_meta = get_meta(archive); }
     archive.meta[edition] = {};
     archive.meta[edition].author = update.author;
     archive.meta[edition].date = update.date;
-    archive.meta[edition].name = update.name;
-    archive.meta[edition].$props = update.$props;
+    if (update.manual){
+      for (key in update){
+        switch (key) {
+          case "edition" : break;
+          case "author" : break;
+          case "date" : break;
+          case "objects" : break;
+          default:
+            if (! (key in current_meta)){
+              archive.meta[edition][key] = update[key];
+            }
+            else{
+              if (key.charAt(0) === "$"){
+                if (current_meta[key].join("\t") !== update[key].join("\t")){
+                  archive.meta[edition][key] = update[key];
+                }
+              }
+              else{
+                if (current_meta[key] !== update[key]){
+                  archive.meta[edition][key] = update[key];
+                }
+              }
+            }
+        }
+      }
+      for (key in current_meta){
+        if (! (key in update)){ archive.meta[edition][key] = ""; }
+      }
+    }
     for (obj in archive.objects){
       if (! (obj in update.objects)){ return "Missing object "+obj+" in "+collection;}
       for (prop in archive.objects[obj]){
@@ -89,7 +135,7 @@ var NW = {
       "Version "+NW.version+" ["+NW.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "node_webkit/";
+    window.FSO.pwd += "amuse_um\\";
     window.VIEW.author = prompt("Add initials for editing");
     if (window.VIEW.author){ window.VIEW.editor = window.EDIT.setup_EDIT; }
     else{ document.getElementById("headline").innerHTML = "amuse-um viewer only"; }
