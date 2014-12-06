@@ -1,8 +1,8 @@
 // amuse_um revision control
-// check latest edition matches archive
+// metadata changes only valid if base equals current content
 var REV = {
-  version : "1.2a", // node_webkit demo
-  date : "2014-11-30",
+  version : "1.3a",
+  date : "2014-12-06",
   file_name : "",
   archive_name : "",
   archive : {},
@@ -25,7 +25,7 @@ var REV = {
     return latest;
   },
   // adds latest collection property values to the existing archive file
-  update_archive: function(collection, archive, update){
+  update_archive: function(collection, archive, update, current){
     "use strict";
     function last_value(list){
       var value, colon;
@@ -35,13 +35,38 @@ var REV = {
       return value;
     }
       
-    var edition, obj, prop, value, latest;
+    var edition, key, obj, prop, value, latest;
     edition = update.edition;
     archive.meta[edition] = {};
     archive.meta[edition].author = update.author;
     archive.meta[edition].date = update.date;
-    archive.meta[edition].name = update.name;
-    archive.meta[edition].$props = update.$props;
+    for (key in update){
+      switch (key) {
+        case "edition" : break;
+        case "author" : break;
+        case "date" : break;
+        case "objects" : break;
+        default:
+          if (! (key in current)){
+            archive.meta[edition][key] = update[key];
+          }
+          else{
+            if (key.charAt(0) === "$"){
+              if (current[key].join("\t") !== update[key].join("\t")){
+                archive.meta[edition][key] = update[key];
+              }
+            }
+            else{
+              if (current[key] !== update[key]){
+                archive.meta[edition][key] = update[key];
+              }
+            }
+          }
+      }
+    }
+    for (key in current){
+      if (! (key in update)){ archive.meta[edition][key] = ""; }
+    }
     for (obj in archive.objects){
       if (! (obj in update.objects)){ return "Missing object "+obj+" in "+collection;}
       for (prop in archive.objects[obj]){
@@ -79,82 +104,13 @@ var REV = {
     }
     
     var text, report;
+    REV.update.manual = "no";
     REV.update.date = today();
     text = JSON.stringify(window.REV.update, null, "  ");
     window.FSO.create_file(window.FSO.pwd+"objects/"+REV.archive_name+".js",
       "var "+REV.archive_name+" = "+text+";\n");
-    report = REV.update_archive(REV.archive_name, REV.archive, REV.update);
+    report = REV.update_archive(REV.archive_name, REV.archive, REV.update, REV.current);
     return report;
-  },
-// creates next edition by combining off-line update with current edition
-  revise: function(){
-    function last_edition(list){
-      var entry, colon;
-      entry = list[list.length-1];
-      colon = entry.indexOf(":");
-      return parseInt(entry.slice(0,colon), 10);
-    }
-    function same_objects(current, update){
-      var obj, prop;
-      for (obj in update){
-        if (! (obj in current)){ return false; }
-        for (prop in update[obj]){
-          if (! (prop in current[obj])){ return false; }
-          else{
-            if (prop.charAt(0)==="$"){
-              if (current[obj][prop].join("\t") !== update[obj][prop].join("\t")){
-                return false;
-              }
-            }          
-            else{ 
-              if (current[obj][prop] !== update[obj][prop]){ return false; }
-            }
-          }
-        }
-      }
-      return true;
-    }
-    
-    var obj, prop, update_value, current_value, base_value, retained, meta;
-    for (obj in REV.archive.objects){
-      if (! (obj in REV.update.objects)){
-        REV.update.objects[obj] = {};
-      }
-      for (prop in REV.archive.objects[obj]){
-        if (! (prop in REV.update.objects[obj])){ update_value = ""; }
-        else{ update_value = REV.update.objects[obj][prop]; }
-        if (! (prop in REV.current.objects[obj])){ current_value = ""; }
-        else{ current_value = REV.current.objects[obj][prop]; }
-        base_value = REV.get_base(REV.base, REV.archive.objects[obj][prop]);
-        if (update_value !== current_value){
-          if (update_value === base_value){
-            if (current_value){ REV.update.objects[obj][prop] = current_value; }
-            else{ delete REV.update.objects[obj][prop]; }
-          }
-          else{
-            if (last_edition(REV.archive.objects[obj][prop]) > REV.base){
-              return "revision not allowed for "+obj+"."+prop+" due to subsequent baseline change";
-            }
-          }
-        }
-      }
-    }
-    if (! same_objects(REV.current.objects, REV.update.objects)){
-    // overwrite all top level properties except the retained ones in update
-    // with properties from current, delete all top level properties not present in current
-      retained = {"edition":"", "author":"", "date":"","manual":"", "name":"","objects":""};
-      for (meta in REV.current){
-        if (! (meta in retained)){
-          REV.update[meta] = REV.current[meta];
-        }
-      }
-      for (meta in REV.update){
-        if ((! (meta in REV.current)) && (! (meta in retained))){ delete REV.update[meta]; }
-      }
-      REV.update.edition = (REV.latest+1).toString();
-      return REV.publish();
-    }
-    return "No change required for "+REV.file_name;
   },
   handleFiles: function(files){
     "use strict";
@@ -300,27 +256,26 @@ var REV = {
     return "";
   },
   add_update: function(evt){
+    "use strict";      
     var result;
     result = REV.checks(evt);
     if (result){
       document.getElementById("report").innerHTML += "<br>"+result; 
       return ""; 
     }
-    if (REV.base === REV.latest){
+    if (REV.base !== REV.latest){
+      document.getElementById("report").innerHTML += "<br>"+
+        "revision not allowed as base not same as current edition";
+      return "";
+    }
+    else{
       result = REV.publish();
       if (result){
         document.getElementById("report").innerHTML += "<br>"+result;
       }
-      else{ document.getElementById("report").innerHTML += "<br>Published "+REV.file_name; }
-      return "";
-    }
-    else{
-      result = REV.revise();
-      if (result){
-        document.getElementById("report").innerHTML += "<br>"+result; 
-        return ""; 
+      else{ 
+        document.getElementById("report").innerHTML += "<br>Published "+REV.file_name;
       }
-      document.getElementById("report").innerHTML += "<br>Completed revision for "+REV.file_name;
     }
     return "";
   }

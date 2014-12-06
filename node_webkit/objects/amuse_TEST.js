@@ -1,6 +1,6 @@
 var amuse_TEST = {
   "edition": "6",
-  "date": "01 Dec 2014",
+  "date": "06 Dec 2014",
   "objects": {
     "Test1": {
       "briefly": "Test object one",
@@ -53,9 +53,6 @@ var amuse_TEST = {
     },
     "Test7": {
       "briefly": "Test for SYNC module"
-    },
-    "Test8": {
-      "briefly": "Testing new archive"
     }
   },
   "name": "amuse_um TEST collection",
@@ -146,6 +143,6 @@ var amuse_TEST = {
     "disposal_reference_number",
     "exit_reference_number"
   ],
-  "manual": "true",
+  "manual": "no",
   "author": "tk"
 };

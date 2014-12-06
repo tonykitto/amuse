@@ -1,6 +1,6 @@
 {
-  "edition": "3",
-  "date": "04 Oct 2014",
+  "edition": "7",
+  "date": "06 Dec 2014",
   "objects": {
     "Test1": {
       "briefly": "Test object one",
@@ -44,6 +44,15 @@
       "normal_location": "store",
       "current_location": "store",
       "exhibit_note": "stored"
+    },
+    "Test6": {
+      "briefly": "test for node_webkit demo",
+      "$tags": [
+        "sw_test"
+      ]
+    },
+    "Test7": {
+      "briefly": "Test for node_webkit demo"
     }
   },
   "name": "amuse_um TEST collection",
@@ -134,5 +143,6 @@
     "disposal_reference_number",
     "exit_reference_number"
   ],
-  "manual": "false"
+  "manual": "yes",
+  "author": "tk"
 }

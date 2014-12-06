@@ -2,7 +2,7 @@
   "meta": {
     "1": {
       "author": "tk",
-      "date": "25 Nov 2014",
+      "date": "04 Oct 2014",
       "name": "amuse_um TEST collection",
       "$props": [
         "briefly",
@@ -111,7 +111,8 @@
     },
     "6": {
       "author": "tk",
-      "date": "01 Dec 2014"
+      "date": "06 Dec 2014",
+      "manual": "no"
     }
   },
   "objects": {
@@ -209,11 +210,6 @@
     "Test7": {
       "briefly": [
         "5:Test for SYNC module"
-      ]
-    },
-    "Test8": {
-      "briefly": [
-        "6:Testing new archive"
       ]
     }
   }

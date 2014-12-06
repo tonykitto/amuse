@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// bug fix - close editor after publish or discard
+// changes to publish function
 var EDIT = {
-  version : "2.5",
-  date : "2014-11-28",
+  version : "2.6",
+  date : "2014-12-05",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -305,7 +305,7 @@ var EDIT = {
     var keep;
     if (EDIT.o_publish){ return ""; }
     EDIT.o_publish = true;
-    if (window.FSO){ keep = "COMMIT?"; } else{ keep = "SAVE JSON TO FILE?"; }
+    if (window.FSO){ keep = "PUBLISH?"; } else{ keep = "SAVE JSON TO FILE?"; }
     document.getElementById("publish_button").innerHTML = keep;
     document.getElementById("discard_button").innerHTML = "DISCARD?";
     return "";
@@ -327,18 +327,18 @@ var EDIT = {
       alert("The result of all the changes have been cancelled out - no changes");
     }
     else{
-      if (window.FSO){ keep = "commit changes for next edition"; } else{ keep = "save changes to a local file"; }
+      if (window.FSO){ keep = "publish changes for next edition"; } else{ keep = "save changes to a local file"; }
       if (confirm("Confirm you wish to "+keep)){
         o = window.VIEW.collection;
-        if (! ("edition" in o)){ o.edition = "0"; }
-        o.edition = ""+(1+parseInt(o.edition, 10));
+        if (! ("edition" in o)){ o.edition = "1"; }
+        if (! ("manual" in o)){o.manual = "yes"; }
+        if (("manual" in o) && o.manual === "no"){ o.edition = ""+(1+parseInt(o.edition, 10)); }
+        if (window.FSO && window.FSO.pwd){o.manual = "no"; }else{o.manual = "yes"; }
         o.date = today();
         o.author = window.VIEW.author;
-        o.manual = "true";
         file_name = window.VIEW.file_name+"_"+o.edition+".json";
         update = JSON.stringify(window.VIEW.collection, null, "  ");
         if (! window.FSO || !window.FSO.pwd){ // use File API
-         
           textFileAsBlob = new Blob([update],{type:'text/plain'});
           downloadLink = document.createElement("a");
           downloadLink.download = file_name;
@@ -357,7 +357,6 @@ var EDIT = {
           downloadLink.click();
         }
         else{ // use node-webkit
-          o.manual = "false";
           window.FSO.create_file(window.FSO.pwd+"objects/"+window.VIEW.file_name+".js",
             "var "+window.VIEW.file_name+" = "+update+";\n");
           report = window.NW.archive(window.VIEW.file_name, o);
