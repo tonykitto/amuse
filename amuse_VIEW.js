@@ -1,8 +1,8 @@
 // simple amuse_json collection viewer
-// adds author initials for editing, link changed from web to ../DOCS
+// hash tags not case sensitive
 var VIEW = {
-  version : "1.4",
-  date : "2014-11-23",
+  version : "1.5",
+  date : "2014-12-04",
   author: "",
   album_image: -1,
   album: "",
@@ -26,6 +26,7 @@ var VIEW = {
     for (id in objects){
       VIEW.full_list.push(id);
     }
+    VIEW.full_list = VIEW.nat_sort(VIEW.full_list);
     VIEW.unsorted_list = VIEW.full_list;
     VIEW.list =  VIEW.full_list;
     VIEW.update_names();
@@ -58,7 +59,7 @@ var VIEW = {
       }
     
       var html, i;
-      if ((prop.charAt(0) !== "$") || (!(length in list))){return "<li>invalid "+prop+"</li>"; }
+      if (list.length === 0){return ""; }
       html = "<ul><span class=\"centred\">"+prop+"</span>";
       switch (prop){
         case "$doc_links" :
@@ -243,7 +244,7 @@ var VIEW = {
             tag = tags[j];
             match = false;
             for (k=0; k<values.length; k += 1){
-              value = values[k];
+              value = values[k].toLowerCase();
               if (value === tag){
                 match = true;
                 break;
@@ -302,7 +303,7 @@ var VIEW = {
       keys = [];
       for (i=0; i<keywords.length; i += 1){
         if (keywords[i].charAt(0) === "#"){
-          tags.push(keywords[i].slice(1)); // remove # prefix
+          tags.push(keywords[i].slice(1).toLowerCase()); // remove # prefix
         }
         else{ keys.push(keywords[i].toLowerCase()); }
       }
