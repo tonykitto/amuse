@@ -1,7 +1,8 @@
 // simple amuse_um json viewer
+// added author check for editing
 var CHOOSE = {
-	version : "1",
-  date : "2014-09-24",
+	version : "1.2",
+  date : "2014-12-05",
   file_name : "",
   handleFiles: function(files){
     "use strict";
@@ -53,7 +54,12 @@ var CHOOSE = {
       window.VIEW.collection.edition = "0";
     }
     if (window.EDIT && ("setup_EDIT" in window.EDIT)){
-      window.VIEW.editor = window.EDIT.setup_EDIT;
+      if (! window.VIEW.author){
+        window.VIEW.author = prompt("Add initials for editing");
+        if (window.VIEW.author){
+          window.VIEW.editor = window.EDIT.setup_EDIT;
+        }
+      }
     }
     window.VIEW.start_VIEW(window.VIEW.collection);
     return "";
@@ -61,6 +67,7 @@ var CHOOSE = {
 	start: function(){
     "use strict";
 		document.getElementById("report").innerHTML = "Version "+CHOOSE.version;
+    CHOOSE.author = "";
 		return "";
 	}
 };
