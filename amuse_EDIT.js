@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// changes to publish function
+// files saved as json contain a base edition hash value
 var EDIT = {
-  version : "2.6",
-  date : "2014-12-05",
+  version : "2.7",
+  date : "2014-12-07",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -310,6 +310,22 @@ var EDIT = {
     document.getElementById("discard_button").innerHTML = "DISCARD?";
     return "";
   },
+  string_hash: function(string){
+    "use strict";
+    var hash, length, i, chr;
+    hash = 0;
+    length = string.length;
+    if (length === 0){return 0; }
+    for (i=0; i<length; i += 1){
+      chr = string.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // 32-bit integer
+    }
+    return hash;
+  },
+  edition_string: function(o){
+    return o.edition+o.author+o.date;
+  },
   publish: function(){
     "use strict";
     function today(){
@@ -330,13 +346,21 @@ var EDIT = {
       if (window.FSO){ keep = "publish changes for next edition"; } else{ keep = "save changes to a local file"; }
       if (confirm("Confirm you wish to "+keep)){
         o = window.VIEW.collection;
-        if (! ("edition" in o)){ o.edition = "1"; }
+        if (! ("edition" in o)){ o.edition = "0"; }
         if (! ("manual" in o)){o.manual = "yes"; }
-        if (("manual" in o) && o.manual === "no"){ o.edition = ""+(1+parseInt(o.edition, 10)); }
-        if (window.FSO && window.FSO.pwd){o.manual = "no"; }else{o.manual = "yes"; }
+        if (("manual" in o) && o.manual === "no"){
+          if (window.FSO && window.FSO.pwd){
+            o.manual = "no"; 
+            o.edition = ""+(1+parseInt(o.edition, 10)); 
+          }
+          else{
+            o.manual = "yes";
+            o.edition += ":"+EDIT.string_hash(EDIT.edition_string(o));
+          }
+        }
         o.date = today();
         o.author = window.VIEW.author;
-        file_name = window.VIEW.file_name+"_"+o.edition+".json";
+        file_name = window.VIEW.file_name+".json";
         update = JSON.stringify(window.VIEW.collection, null, "  ");
         if (! window.FSO || !window.FSO.pwd){ // use File API
           textFileAsBlob = new Blob([update],{type:'text/plain'});
