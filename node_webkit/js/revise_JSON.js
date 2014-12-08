@@ -1,29 +1,14 @@
 // amuse_um revision control
-// metadata changes only valid if base equals current content
+// revised json files have a base hash value
 var REV = {
-  version : "1.3a",
-  date : "2014-12-06",
+  version : "1.4",
+  date : "2014-12-08",
   file_name : "",
   archive_name : "",
   archive : {},
   update : {},
   current : {},
-  base : 0,
   latest : 0,
-  // base is an edition number, list is the list from an archive property value
-  get_base: function(base, list){
-    var latest, list_length, i, entry, colon, edition;
-    latest = "";
-    list_length = list.length;
-    for (i=0; i<list_length; i += 1){
-      entry = list[i];
-      colon = entry.indexOf(":");
-      edition = parseInt(entry.slice(0,colon),10);
-      if (edition > base){ return latest; }
-      latest = entry.slice(colon+1);
-    }
-    return latest;
-  },
   // adds latest collection property values to the existing archive file
   update_archive: function(collection, archive, update, current){
     "use strict";
@@ -119,10 +104,10 @@ var REV = {
     REV.file_name = files[0].name;
     if ((REV.file_name.indexOf("amuse_") === 0) && 
         (REV.file_name.slice(REV.file_name.lastIndexOf(".")) === ".json")){
-          REV.archive_name = REV.file_name.slice(0, REV.file_name.lastIndexOf("_"));
+          REV.archive_name = REV.file_name.slice(0, REV.file_name.lastIndexOf("."));
     }
     else{ REV.archive_name = ""; }
-    if (REV.archive_name.length>7){
+    if (REV.archive_name.length>6){
       reader = new FileReader();
       reader.readAsText(files[0]);
       reader.onload = REV.add_update;
@@ -136,7 +121,23 @@ var REV = {
       "Version "+REV.version+" ["+REV.date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "node_webkit/";
+    window.FSO.pwd += "amuse_um\\";
+  },
+  string_hash: function(string){
+    "use strict";
+    var hash, length, i, chr;
+    hash = 0;
+    length = string.length;
+    if (length === 0){return 0; }
+    for (i=0; i<length; i += 1){
+      chr = string.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // 32-bit integer
+    }
+    return hash;
+  },
+  edition_string: function(o){
+    return o.edition+o.author+o.date;
   },
   checks: function(evt){
     "use strict";
@@ -199,10 +200,6 @@ var REV = {
     if (! ("edition" in REV.update)){
       return "The selected JSON file "+REV.file_name+" is missing an edition number";
     }
-    REV.base =parseInt(REV.update.edition, 10)-1;
-    if (REV.base < 1){
-      return REV.file_name+" edition "+REV.update.edition+" must be greater than 1";
-    }
     if (! ("name" in REV.update)){
       return "The selected JSON file "+REV.file_name+" is missing its name property";
     }
@@ -216,11 +213,11 @@ var REV = {
     text = text.slice(0,text.lastIndexOf("}")+1);
     text = text.slice(text.indexOf("{"));
     REV.current = JSON.parse(text);
-    REV.latest = parseInt(REV.current.edition, 10);
-    if (REV.latest < REV.base){
-      return REV.file_name+" edition "+REV.update.edition+
-        " is more than the base edition +1";
+    if (REV.update.edition !== REV.current.edition+
+      ":"+REV.string_hash(REV.edition_string(REV.current))){
+      return "The selected JSON file "+REV.file_name+" has an invalid edition value";
     }
+    REV.latest = parseInt(REV.current.edition, 10);
     if (REV.update.name !== REV.current.name){
       return "The selected JSON file "+REV.file_name+" name does not match";
     }
@@ -263,19 +260,12 @@ var REV = {
       document.getElementById("report").innerHTML += "<br>"+result; 
       return ""; 
     }
-    if (REV.base !== REV.latest){
-      document.getElementById("report").innerHTML += "<br>"+
-        "revision not allowed as base not same as current edition";
-      return "";
+    result = REV.publish();
+    if (result){
+      document.getElementById("report").innerHTML += "<br>"+result;
     }
-    else{
-      result = REV.publish();
-      if (result){
-        document.getElementById("report").innerHTML += "<br>"+result;
-      }
-      else{ 
-        document.getElementById("report").innerHTML += "<br>Published "+REV.file_name;
-      }
+    else{ 
+      document.getElementById("report").innerHTML += "<br>Published "+REV.file_name;
     }
     return "";
   }
