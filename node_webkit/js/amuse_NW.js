@@ -1,8 +1,8 @@
 // Towneley amuse_um collection editor / archive function
-// archive now includes full metadata archive
+// bug fix for update_archive
 var NW = {
-  version : "1.1",
-  date : "2014-12-02",
+  version : "1.2",
+  date : "2014-12-14",
   object : {},
   // adds latest collection property values to the existing archive file
   update_archive: function(collection, archive, update){
@@ -26,10 +26,12 @@ var NW = {
     }
     function last_value(list){
       var value, colon;
+      // expecting array of strings, each containing "number:value"
+      if (list.length === 0){ return ""; }
       value = list[list.length-1];
       colon = value.indexOf(":");
       if (colon>0){ return value.slice(colon+1); }
-      return value;
+      return "";
     }
       
     var edition, current_meta, key, obj, prop, value, latest;
@@ -76,7 +78,9 @@ var NW = {
           if (prop.charAt(0) === "$"){ latest = latest.join("\t"); }
           if (value !== latest){ archive.objects[obj][prop].push(edition+":"+latest); }
         }
-        else{ archive.objects[obj][prop].push(edition+":"); }
+        else{  // record change if value has been updated to empty string 
+          if (value !== ""){archive.objects[obj][prop].push(edition+":"); }
+        }
       }
     }
     for (obj in update.objects){
