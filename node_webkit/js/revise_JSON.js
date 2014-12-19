@@ -1,14 +1,13 @@
 // amuse_um revision control
-// revised json files have a base hash value
+// bug fix for checks function
 var REV = {
-  version : "1.4",
-  date : "2014-12-08",
+  version : "1.5",
+  date : "2014-12-16",
   file_name : "",
   archive_name : "",
   archive : {},
   update : {},
   current : {},
-  latest : 0,
   // adds latest collection property values to the existing archive file
   update_archive: function(collection, archive, update, current){
     "use strict";
@@ -184,8 +183,8 @@ var REV = {
       return "";
     }
     
-    var file, error_line, check, current_file, text, archive_file, list, key,
-      valid_props, i, mandatory, obj, prop;
+    var file, error_line, check, current_file, text, archive_file, valid_props,
+      i, mandatory, obj, prop;
     file = evt.target.result;
     try{    
       REV.update = window.amuse_PARSE(file);
@@ -217,7 +216,7 @@ var REV = {
       ":"+REV.string_hash(REV.edition_string(REV.current))){
       return "The selected JSON file "+REV.file_name+" has an invalid edition value";
     }
-    REV.latest = parseInt(REV.current.edition, 10);
+    REV.update.edition = ""+(1+parseInt(REV.current.edition, 10));
     if (REV.update.name !== REV.current.name){
       return "The selected JSON file "+REV.file_name+" name does not match";
     }
@@ -226,11 +225,6 @@ var REV = {
       return "Missing "+archive_file;
     }
     REV.archive = JSON.parse(window.FSO.read_file(archive_file));
-    list = [];
-    for (key in REV.archive.meta){ list.push(key); }
-    if (REV.latest !== list.length){
-      return "Cannot complete revision, latest edition does not match archive";
-    }
     valid_props = {};
     for (i=0; i<REV.update.$props.length; i += 1){
       valid_props[REV.update.$props[i]] = true;
