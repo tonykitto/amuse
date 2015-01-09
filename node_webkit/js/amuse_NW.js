@@ -1,8 +1,10 @@
 // Towneley amuse_um collection editor / archive function
-// bug fix for update_archive
+// keep log of changes and avoid closing without saving changes
 var NW = {
-  version : "1.2",
-  date : "2014-12-14",
+  version : "2.0",
+  date : "2015-01-09",
+  win : "",
+  log_name : "",
   object : {},
   // adds latest collection property values to the existing archive file
   update_archive: function(collection, archive, update){
@@ -98,6 +100,7 @@ var NW = {
     return "";
   },
   load_archive: function(collection){
+    "use strict";
     var archive_file;
     archive_file = window.FSO.pwd+"json_archive/"+collection+".arch";
     if (! window.FSO.file_exists(archive_file)){ return "Missing "+archive_file; }
@@ -132,6 +135,162 @@ var NW = {
     }
     return "";
   },
+  recover_last_session: function(lines){
+    "use strict";
+    function discard_file(){
+      alert("The last session log is corrupt and has been discarded");
+      window.FSO.copy_file(NW.log_name,
+        NW.log_name.slice(0, NW.log_name.lastIndexOf("."))+".corrupt");
+      return "";
+    }
+    function apply_changes(lines){
+      var mandatory, valid_props, props_length, i, lines_length, j, line, parts,
+        object, property, value, list;
+      mandatory = NW.object.$props[0];
+      valid_props = {};
+      props_length = NW.object.$props.length;
+      for (i=0; i<props_length; i += 1){
+        valid_props[NW.object.$props[i]] = true;
+      }
+      lines_length = lines.length;
+      for (j=1; j<lines_length; j += 1){
+        line = lines[j];
+        parts = line.split("\t");
+        if (parts[0]){
+          object = parts[0];
+          property = parts[1];
+          value = parts[2];
+          list = parts.slice(2);
+          if (object in NW.object.objects){
+            if (property in valid_props){
+              if (property.charAt(0) !== "$"){
+                if (! value){
+                  if (property !== mandatory){
+                    delete NW.object.objects[object][property];
+                  }
+                  else{ return "empty value for "+object+"."+mandatory; }
+                }
+                else{ NW.object.objects[object][property] = value; }
+              }
+              else{
+                if (! value){ NW.object.objects[object][property] = []; }
+                else{ NW.object.objects[object][property] = list; }
+              }
+            }
+            else{ return "invalid property "+object+"."+property; }
+          }
+          else{
+            if (property && (property === mandatory) && value){
+              NW.object.objects[object] = {};
+              NW.object.objects[object][property] = value;
+              window.VIEW.full_list.push(object);
+            }
+            else{ return "invalid object "+object; }
+          }
+        }
+      }
+      return "";
+    }
+    function complete_publication(lines){
+      var report;
+      report = apply_changes(lines);
+      if (report){
+        NW.log_error(report);
+        discard_file();
+      }
+      else{
+        window.EDIT.publish();
+        alert("Last session has been recovered and published");
+      }
+      NW.log_start();
+      return "";
+    }
+    
+    var line, parts, last_line, report;
+    line = lines[0];
+    parts = line.split("\t");
+    if (! parts[0] && (parts[1] === "open") && (parts[2] === NW.object.edition)){
+      last_line = lines[lines.length-1];
+      if (! last_line){last_line = lines[lines.length-2]; }
+      parts = last_line.split("\t");
+      if ( ! parts[0] && (parts[1] === "close")){
+        complete_publication(lines);
+        return "";
+      }
+      report = apply_changes(lines);
+      if (report){ NW.log_error(report); }
+      else{
+        alert("Continuing with previous session");
+        window.EDIT.show_publishing();
+        window.VIEW.reset_collection();
+        return ""; 
+      }
+    }
+    discard_file(); 
+    NW.log_start();
+    return "";
+  },
+  log_start: function(){
+    "use strict";
+    var now;
+    now = new Date();
+    window.FSO.create_file(NW.log_name,
+      "\topen\t"+NW.object.edition+"\t"+window.VIEW.author+"\t"+now.toUTCString()+"\n");
+    return "";
+  },
+  log_close: function(){
+    "use strict";
+    var now;
+    now = new Date();
+    window.FSO.log_file(NW.log_name, "\tclose\t"+now.toUTCString()+"\n");
+    return "";
+  },
+  log_error: function(report){
+    "use strict";
+    window.FSO.log_file(NW.log_name, "\terror\t"+report+"\n");
+    return "";
+  },
+  log_check: function(collection){
+    "use strict";
+    var lines;
+    if (! window.VIEW.author){ return ""; }
+    NW.log_name = window.FSO.pwd+"json_archive/"+collection+".log";
+    if (! window.FSO.file_exists(NW.log_name)){ NW.log_start(); }
+    else{
+      lines = window.FSO.read_file(NW.log_name).split("\n");
+      if (lines.length > 2){ NW.recover_last_session(lines); }
+      else{ NW.log_start(); }
+    }
+    return "";
+  },
+  log_string: function(object, property, value){
+    "use strict";
+    window.FSO.log_file(NW.log_name,object+"\t"+property+"\t"+value+"\n");
+    return "";
+  },
+  log_list: function(object, property, list){
+    "use strict";
+    window.FSO.log_file(NW.log_name,object+"\t"+property+"\t"+list.join("\t")+"\n");  
+    return "";
+  },
+  before_unload: function(){
+    var gui;
+    gui = require('nw.gui');
+    NW.win = gui.Window.get();
+    NW.win.on('close', function(){
+      if (window.EDIT && window.EDIT.o_publish){
+        console.log("not closing before changes published or discarded");
+      }
+      else{ this.close(true); }
+    });
+    window.onbeforeunload = 
+      function(){
+        if (window.EDIT && window.EDIT.o_publish){
+          return "Do you want to publish or discard changes before closing";
+        }
+        else{ return null; }
+      };
+  },
   start: function(){
     "use strict";
     var select, name, o;
@@ -140,8 +299,11 @@ var NW = {
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
     window.FSO.pwd += "amuse_um\\";
-    window.VIEW.author = prompt("Add initials for editing");
-    if (window.VIEW.author){ window.VIEW.editor = window.EDIT.setup_EDIT; }
+    window.VIEW.author = prompt("Add initials in order to edit");
+    if (window.VIEW.author){
+      window.VIEW.editor = window.EDIT.setup_EDIT;
+      NW.before_unload();
+    }
     else{ document.getElementById("headline").innerHTML = "amuse-um viewer only"; }
     select = "<option value=\"\">Select a collection </option>";
     for (name in window.amuse_NAMES){
@@ -168,6 +330,7 @@ var NW = {
     else{
       window.VIEW.file_name = collection;
       window.VIEW.start_VIEW(NW.object);
+      NW.log_check(collection);
     }
     return "";
   }
