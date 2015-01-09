@@ -1,7 +1,8 @@
 // amuse_json collection editor special cases
+// added log entries
 var EDIT_fn = {
-  version : "1.0",
-  date : "2014-11-16",
+  version : "2.0",
+  date : "2015-01-08",
   today: function(){
     var now;
     now = new Date();
@@ -36,6 +37,7 @@ var EDIT_fn = {
     var edit, loan, html;
     edit = window.EDIT;
     edit.location_from = edit.edit_original;
+    if (! edit.location_from){ edit.location_from = "first entry"; }
     edit.location_to = term;
     if (term === "on loan"){ loan = "in the form <b>On loan to X until Y</b>"; }
     else loan = "as appropriate";
@@ -58,12 +60,19 @@ var EDIT_fn = {
     node = document.getElementById("edit_box");
     reason = window.EDIT.rinse(node.value);
     o.current_location = window.EDIT.location_to;
+    if (window.FSO){ 
+      window.NW.log_string(window.EDIT.o_edit,"current_location",o.current_location);
+    }
     if (! ("$location_history" in o)){o.$location_history = []; }
     o.$location_history.push("date: "+EDIT_fn.today()+",from: "+window.EDIT.location_from+
       ",to: "+window.EDIT.location_to+",reason: "+reason);
+    if (window.FSO){
+      window.NW.log_list(window.EDIT.o_edit,"$location_history",o.$location_history);
+    }    
     if (window.EDIT.location_to === "on loan"){ o.exhibit_note = reason; }
     else if (window.EDIT.location_to.search("store") === 0){o.exhibit_note = "stored"; }
     else{o.exhibit_note = "displayed"; }
+    if (window.FSO){ window.NW.log_string(window.EDIT.o_edit,"exhibit_note",o.exhibit_note); }
     window.EDIT.show_publishing();
     window.EDIT.edit_original = "";
     window.EDIT.edit_item = "";

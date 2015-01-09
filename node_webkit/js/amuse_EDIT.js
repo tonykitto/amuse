@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// files saved as json contain a base edition hash value
+// node-webkit logs each change for session recovery
 var EDIT = {
-  version : "2.7",
-  date : "2014-12-07",
+  version : "3.0",
+  date : "2015-01-08",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -216,13 +216,20 @@ var EDIT = {
     if (edit_update !== EDIT.edit_original){
       if (edit_update){
         window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = edit_update;
+        if (window.FSO){ window.NW.log_string(EDIT.o_edit,EDIT.edit_props,edit_update); }
       }
       else{
         if (EDIT.edit_props === window.VIEW.collection.$props[0]){
           window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = 
-            "brief description to be added here";
+            "add value";
+          if (window.FSO){
+            window.NW.log_string(EDIT.o_edit,EDIT.edit_props,edit_update,"add value");
+          } 
         }
-        else{ delete window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props]; }
+        else{
+          delete window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props];
+          if (window.FSO){ window.NW.log_string(EDIT.o_edit,EDIT.edit_props,""); }
+        }
       }
       EDIT.show_publishing();
     }
@@ -271,7 +278,12 @@ var EDIT = {
     else{
       window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = list;
     }
-    if (changed){ EDIT.show_publishing(); }
+    if (changed){
+      if (window.FSO){
+        window.NW.log_list(EDIT.o_edit, EDIT.edit_props, list);
+      }
+      EDIT.show_publishing();
+    }
     EDIT.edit_original = "";
     EDIT.edit_item = "";
     EDIT.editor = "opened";
@@ -289,6 +301,7 @@ var EDIT = {
         return "";
       }
       window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = term;
+      if (window.FSO){ window.NW.log_string(EDIT.o_edit,EDIT.edit_props,term); }      
       EDIT.show_publishing();
     }
     EDIT.edit_original = "";
@@ -341,6 +354,7 @@ var EDIT = {
     update = JSON.stringify(window.VIEW.collection, null, "  ");
     if (update === EDIT.original){
       alert("The result of all the changes have been cancelled out - no changes");
+      if (window.FSO){ window.NW.log_start(); }
     }
     else{
       if (window.FSO){ keep = "publish changes for next edition"; } else{ keep = "save changes to a local file"; }
@@ -381,10 +395,15 @@ var EDIT = {
           downloadLink.click();
         }
         else{ // use node-webkit
+          window.NW.log_close();
           window.FSO.create_file(window.FSO.pwd+"objects/"+window.VIEW.file_name+".js",
             "var "+window.VIEW.file_name+" = "+update+";\n");
           report = window.NW.archive(window.VIEW.file_name, o);
-          if (report){return report; }
+          if (report){
+            window.NW.log_error(report);
+            return report; 
+          }
+          window.NW.log_start();
         }
       }
     }
@@ -406,6 +425,7 @@ var EDIT = {
     if (confirm("Confirm you wish to discard changes")){
       window.VIEW.collection = JSON.parse(EDIT.original);
       window.VIEW.start_VIEW(window.VIEW.collection);
+      if (window.FSO){ window.NW.log_start(); }
     }
     return "";
   },
@@ -456,10 +476,13 @@ var EDIT = {
       EDIT.show_publishing();
       window.VIEW.collection.objects[object_name] = {};
       first_property = window.VIEW.collection.$props[0];   
-      window.VIEW.collection.objects[object_name][first_property] = "entry to be added here";
+      window.VIEW.collection.objects[object_name][first_property] = "add value";
       window.VIEW.full_list.push(object_name);
       window.VIEW.reset_collection();
       window.VIEW.display_object(object_name);
+      if (window.FSO){
+        window.NW.log_string(object_name,first_property,"add value");
+      }         
     }
     return "";
   }
