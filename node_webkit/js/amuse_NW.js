@@ -1,8 +1,8 @@
 // Towneley amuse_um collection editor / archive function
-// keep log of changes and avoid closing without saving changes
+// fix bug in update_archive
 var NW = {
-  version : "2.0",
-  date : "2015-01-09",
+  version : "2.1",
+  date : "2015-01-18",
   win : "",
   log_name : "",
   object : {},
@@ -38,11 +38,11 @@ var NW = {
       
     var edition, current_meta, key, obj, prop, value, latest;
     edition = update.edition;
-    if (update.manual){ current_meta = get_meta(archive); }
+    if (update.manual==="yes"){ current_meta = get_meta(archive); }
     archive.meta[edition] = {};
     archive.meta[edition].author = update.author;
     archive.meta[edition].date = update.date;
-    if (update.manual){
+    if (update.manual==="yes"){
       for (key in update){
         switch (key) {
           case "edition" : break;
