@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// node-webkit logs each change for session recovery
+// removed redundant variables, added comments, changes to make source easier to read
 var EDIT = {
-  version : "3.0",
-  date : "2015-01-08",
+  version : "3.0.1",
+  date : "2015-02-15",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -94,7 +94,7 @@ var EDIT = {
   },
   editing: function(){
     "use strict";
-    var object_name, group_header, i, group;
+    var object_name, group_header, group;
     if (EDIT.editor === "select"){
       object_name = window.VIEW.list[window.VIEW.number];
       EDIT.o_edit = object_name;
@@ -102,7 +102,7 @@ var EDIT = {
       document.getElementById("edit_button").innerHTML = "CLOSE?";
       document.getElementById("add_button").innerHTML = "";
       group_header = "<p><b class=\"name\" >"+object_name+"</b>";
-      for (i in window.VIEW.collection.$groups){
+      for (var i=0; i<window.VIEW.collection.$groups.length; i++ ){
         group = window.VIEW.collection.$groups[i];
         if (window.VIEW.collection[group].length >0 ){
           group_header += "<span class=\"header\" onclick=\"EDIT.edit_group('"+
@@ -123,13 +123,13 @@ var EDIT = {
   },
   edit_group: function(group){
     "use strict";
-    var object, html, list, i, prop, value;
+    var object, html, list, prop, value;
     if (EDIT.editor === "active"){ return ""; }
     EDIT.o_group = group;
     object = window.VIEW.collection.objects[EDIT.o_edit];
     html = "<ul>"+group.toUpperCase();
     list = window.VIEW.collection[group];
-    for (i in list){
+    for (var i=0; i<list.length; i++ ){
       prop = list[i];
       if (prop in object){ 
         if (prop.charAt(0) === "$"){ value = "<strong>[.. edit list ..]</strong>"; }
@@ -147,7 +147,7 @@ var EDIT = {
       return (text || "").replace(/^\x20+|\x20+$/g,"");
     }
     
-    var text, colon, term, list, edit_HTML, i, tlist, options, length, entry ;
+    var text, colon, term, list, edit_HTML, tlist, options;
     if (EDIT.editor === "active"){ return ""; }
     EDIT.editor = "active";
     EDIT.edit_node = node;
@@ -163,7 +163,7 @@ var EDIT = {
       else{ list = []; }
       edit_HTML = "<h3 class=list_entry>"+term+": edit list entry / add list entry</h3><ul>";
       if (list.length>0){
-        for (i in list){
+        for (var i=0; i<list.length; i++ ){
           edit_HTML += "<li><input type=\"text\" id=\"edit_list"+i+"\" size=\"60\" value=\""+
           list[i]+"\" /></li>";
         }
@@ -183,10 +183,8 @@ var EDIT = {
         "onchange=EDIT.save_term(term.value)>"];
       options.push("<option value=\"none\">select a term</option>");
       options.push("<option value=\"none\">no change</option>");
-      length = tlist.length;
-      for (i=0; i<length; i+= 1){
-        entry = tlist[i];
-        options.push("<option value=\""+entry+"\">"+entry+"</option>");
+      for (var j=0; j<tlist.length; j+= 1){
+        options.push("<option value=\""+tlist[j]+"\">"+tlist[j]+"</option>");
       }
       options.push("</select>");
       node.innerHTML = options.join("\r\n");
@@ -452,16 +450,15 @@ var EDIT = {
       return choice;
     }
     
-    var choice, select, i, name;
+    var choice, select;
     if ((EDIT.editor === "opened") || (EDIT.editor === "active")){ return ""; }
     document.getElementById("edit_button").innerHTML = "";
     choice = next_object();
     select = "<p><b>Choose next object name from this list </b>"+
       "<select id=\"selected_name\" onchange=EDIT.object_choice(selected_name.value)>";
     select += "<option value=\"\">one of</option>";
-    for (i in choice){
-      name = choice[i];
-      select += "<option value=\""+name+"\">"+name+"</options>";
+    for (var i=0; i<choice.length; i++){
+      select += "<option value=\""+choice[i]+"\">"+choice[i]+"</options>";
     }
     select += "<option value=\"\">none</options>";
     document.getElementById("editor").innerHTML = select+"</select><p>";

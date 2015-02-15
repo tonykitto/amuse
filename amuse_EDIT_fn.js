@@ -1,8 +1,8 @@
 // amuse_json collection editor special cases
-// added log entries
+// no location history
 var EDIT_fn = {
-  version : "2.0",
-  date : "2015-01-08",
+  version : "2.1",
+  date : "2015-02-15",
   today: function(){
     var now;
     now = new Date();
@@ -25,8 +25,8 @@ var EDIT_fn = {
     
     switch (property){
       case "current_location":
-        if (has_location_history()){ return true; }
-        return false;
+        if (has_location_history() && window.EDIT.edit_original){ return true; }
+        return false; // window.EDIT.edit_original is not true for first entry
       case "normal_location":
         return false;
       default: return false;
@@ -37,7 +37,6 @@ var EDIT_fn = {
     var edit, loan, html;
     edit = window.EDIT;
     edit.location_from = edit.edit_original;
-    if (! edit.location_from){ edit.location_from = "first entry"; }
     edit.location_to = term;
     if (term === "on loan"){ loan = "in the form <b>On loan to X until Y</b>"; }
     else loan = "as appropriate";
