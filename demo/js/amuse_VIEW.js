@@ -1,8 +1,8 @@
 // simple amuse_json collection viewer
-// removed redundant variables, added comments, changes to make source easier to read
+// makes display_browser after save_edit function possible
 var VIEW = {
-  version : "2.0",
-  date : "2015-02-15",
+  version : "2.1",
+  date : "2015-02-18",
   author: "", // option to set in amuse_um.js or amuse_NW.js
   editor: "", // set as function by amuse_um.js or amuse_NW.js if author value not empty
   album_image: -1,
@@ -80,22 +80,13 @@ var VIEW = {
       "Version "+VIEW.version+" ["+VIEW.date+"]"; }
     return "";
   },
-  browsing: function(){
+  display_browser: function(){
     "use strict";
     var edition, date, html, first_prop, object_number;
-    VIEW.names = {};
-    for (var i=0; i<VIEW.list.length; i++){
-      VIEW.names[VIEW.list[i]] = i*1;
-    }
-    VIEW.number = 0;
     if ("edition" in VIEW.collection){ edition = VIEW.collection.edition; }
     else { edition = ""; }
     if ("date" in VIEW.collection){ date = VIEW.collection.date; }
     else { date = "undated"; }
-    if ("image_folder" in VIEW.collection){
-      VIEW.images = "../images/"+VIEW.collection.image_folder;
-    }
-    else{ VIEW.images = "../images/"; }
     html = "<h3>"+VIEW.collection.name+" "+edition+" "+date+"</h3>"+
       "<p class=\"centred\">listed "+VIEW.list.length+" of "+VIEW.full_list.length+
       " objects</p><ul>";
@@ -106,6 +97,21 @@ var VIEW = {
         object_number+"</b>: "+VIEW.collection.objects[object_number][first_prop]+"</li>";
     }
     document.getElementById("browser").innerHTML = html+"</ul>";
+    return "";
+  },
+  browsing: function(){
+    "use strict";
+    var object_number;
+    VIEW.names = {};
+    for (var i=0; i<VIEW.list.length; i++){
+      VIEW.names[VIEW.list[i]] = i*1;
+    }
+    VIEW.number = 0;
+    if ("image_folder" in VIEW.collection){
+      VIEW.images = "../images/"+VIEW.collection.image_folder;
+    }
+    else{ VIEW.images = "../images/"; }
+    VIEW.display_browser();
     object_number = VIEW.list[VIEW.number];
     document.getElementById("object_number").value = object_number;
     VIEW.display_object(object_number);

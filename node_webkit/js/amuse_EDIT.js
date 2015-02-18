@@ -1,8 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// removed redundant variables, added comments, changes to make source easier to read
+// updates browser display after save edit for $props[0]
 var EDIT = {
-  version : "3.0.1",
-  date : "2015-02-15",
+  version : "3.1",
+  date : "2015-02-18",
   original : "", // JSON text for VIEW.collection
   editor : "", // closed | select | opened | active
   o_group : "", // name of property group being edited
@@ -214,12 +214,15 @@ var EDIT = {
     if (edit_update !== EDIT.edit_original){
       if (edit_update){
         window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = edit_update;
+        if (EDIT.edit_props === window.VIEW.collection.$props[0]){
+          window.VIEW.display_browser();
+        }
         if (window.FSO){ window.NW.log_string(EDIT.o_edit,EDIT.edit_props,edit_update); }
       }
       else{
         if (EDIT.edit_props === window.VIEW.collection.$props[0]){
-          window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = 
-            "add value";
+          window.VIEW.collection.objects[EDIT.o_edit][EDIT.edit_props] = "add value";
+          window.VIEW.display_browser();
           if (window.FSO){
             window.NW.log_string(EDIT.o_edit,EDIT.edit_props,edit_update,"add value");
           } 
