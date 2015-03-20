@@ -1,8 +1,8 @@
 // amuse_um revision control
-// bug fix for checks function
+// bug fix to avoid duplicate empty value record
 var REV = {
-  version : "1.5",
-  date : "2014-12-16",
+  version : "1.6",
+  date : "2015-03-20",
   file_name : "",
   archive_name : "",
   archive : {},
@@ -60,7 +60,9 @@ var REV = {
           if (prop.charAt(0) === "$"){ latest = latest.join("\t"); }
           if (value !== latest){ archive.objects[obj][prop].push(edition+":"+latest); }
         }
-        else{ archive.objects[obj][prop].push(edition+":"); }
+        else{ 
+          if (value){archive.objects[obj][prop].push(edition+":"); }
+        }
       }
     }
     for (obj in update.objects){
