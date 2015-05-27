@@ -1,7 +1,7 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
 var Editor = (function(){
   "use strict";
-  var version = "0.0", date = "2015-04-04";
+  var version = "0.1", date = "2015-05-27";
   var collection, // the museum collection object, provided by edit_prompt
     file_name, // name provided by edit_prompt, to be used when saving results of edit
     author, // alphanumeric string, authority to edit, or empty string - edit denied 
@@ -485,7 +485,7 @@ var Editor = (function(){
     
     var headline;
     headline = document.getElementById("headline");
-    if (headline){ headline.innerHTML = "amuse-um viewer / editor"; }
+    if (headline){ headline.innerHTML = "amuse viewer / editor"; }
     original = JSON.stringify(collection, null, "  ");
     document.getElementById("report").innerHTML = 
       "<span class=\"ebutton\" id=\"edit_button\" \"></span>"+
