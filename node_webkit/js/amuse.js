@@ -1,13 +1,13 @@
 // support for simple web API
 // if query is edit collects author initials for editing
 // else does not offer editor function
-var amuse_um = {
-  version : "6.0",
-  date : "2015-04-05",
+var amuse = {
+  version : "7.0",
+  date : "2015-05-27",
   session_init: function(coll, query){
     "use strict";
     var event;
-    document.getElementById("report").innerHTML = "amuse_um";
+    document.getElementById("report").innerHTML = "amuse";
     window.Viewer.start(window[coll]);
     if (query){
       if (query === "edit"){

@@ -55,7 +55,7 @@ var amuse_TEST = {
       "briefly": "Test for SYNC module"
     }
   },
-  "name": "amuse_um TEST collection",
+  "name": "amuse TEST collection",
   "$props": [
     "briefly",
     "has_parts",

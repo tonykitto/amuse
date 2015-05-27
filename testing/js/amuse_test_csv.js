@@ -1,4 +1,4 @@
-// amuse_um software validation
+// amuse software validation
 // testing CSV
 var TEST_CSV = {
   version : "0.0",

@@ -1,6 +1,6 @@
 var amuse_PARSE = function () {
 // This is a function that parses a defined sub-set of JSON text, producing 
-// an amuse_um JavaScript data structure that only allows non-empty string values.
+// an amuse JavaScript data structure that only allows non-empty string values.
 // It is based on Douglas Crockford's JSOn parser in JavaScript: The Good Parts.
 "use strict";
 var at,   // The index of the current character
@@ -48,7 +48,7 @@ var at,   // The index of the current character
   },
   
   number = function () {
-    // a number value is not valid in amuse_um
+    // a number value is not valid in amuse
     error("Bad number");
   },
   
@@ -106,14 +106,14 @@ var at,   // The index of the current character
   },
   
   word = function () {
-    // true, false, or null are invalid in amuse_um
+    // true, false, or null are invalid in amuse
     switch (ch) {
       case 't':
         next('t');
         next('r');
         next('u');
         next('e');
-        error("true invalid in amuse_um");
+        error("true invalid in amuse");
         break;
       case 'f':
         next('f');
@@ -121,14 +121,14 @@ var at,   // The index of the current character
         next('l');
         next('s');
         next('e');
-        error("false invalid in amuse_um");
+        error("false invalid in amuse");
         break;
       case 'n':
         next('n');
         next('u');
         next('l');
         next('l');
-        error("null invalid in amuse_um");
+        error("null invalid in amuse");
      }
    error("Unexpected '" + ch + "'");
  },
@@ -178,7 +178,7 @@ var at,   // The index of the current character
       white();
       if (ch === '}') {
         next('}');
-        error("no empty objects in amuse_um");   // empty object
+        error("no empty objects in amuse");   // empty object
       }
       level += 1;
       while (ch) {
@@ -186,7 +186,7 @@ var at,   // The index of the current character
         white();
         next(':');
         if (key === ""){
-          error("empty key invalid in amuse_um");
+          error("empty key invalid in amuse");
         }
         if (Object.hasOwnProperty.call(object, key)){
           error('Duplicate key "' + key + '"');
@@ -215,7 +215,7 @@ var at,   // The index of the current character
 
   value = function () {
     // Parse a JSON value. It could be an object or an array or a string.
-    // amuse_um does not allow numbers or the words true, false and null.
+    // amuse does not allow numbers or the words true, false and null.
     var part;
     white();
     switch (ch) {

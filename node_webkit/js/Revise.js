@@ -1,7 +1,7 @@
-// amuse_um revision control
+// amuse revision control
 var Revise = (function(){
   "use strict";
-  var version = "0.0", date = "2015-04-05";
+  var version = "0.1", date = "2015-05-27";
   var file_name, // received by handleFiles (amuse_X.json)
   archive_name, // set by handleFiles (amuse_X)
   update_object = {}, // created by parsing the file_name content
@@ -13,7 +13,7 @@ var Revise = (function(){
       "Version "+version+" ["+date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um\\";
+    window.FSO.pwd += "amuse\\";
   }
 // handleFiles invoked by onchange for fileInput
   function handleFiles(files){
@@ -30,7 +30,7 @@ var Revise = (function(){
       reader.readAsText(files[0]);
       reader.onload = Revise.add_update;
     }
-    else{ alert("Selected file "+file_name+" does not have a valid amuse_um JSON file name"); }
+    else{ alert("Selected file "+file_name+" does not have a valid amuse JSON file name"); }
     return "";
   }
 // add_update invoked when selected file is loaded 

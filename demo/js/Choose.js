@@ -1,10 +1,10 @@
-// simple amuse_um json viewer
+// simple amuse json viewer
 // added author check for editing
 var CHOOSE = {
   start: function(){
     "use strict";
-    var version = "1.0",
-      date = "2015-04-03";
+    var version = "1.1",
+      date = "2015-05-27";
     document.getElementById("report").innerHTML = "CHOOSE Version "+version+" ["+date+"]";
     return "";
   },

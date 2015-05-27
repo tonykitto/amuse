@@ -1,4 +1,4 @@
-// amuse_um software validation
+// amuse software validation
 // testing amuse_PARSE
 var TEST = {
   version : "0.0",
@@ -41,7 +41,7 @@ var TEST = {
     "{\"objects\": {\n\"x\" : {\"$x\" : \"y\"}\n}\n}\n", // test 32
     "{\"objects\": {\n\"x\" : {\"x\" : \"y\"}\n},\n}\n", // test 33
     "{\"objects\": {\n\"x\" : {\"x\" : \"y\"},\n\"x1\" : {\"x\" : \"y\"}\n}\n}", //test 34
-    // amuse_um extra tests
+    // amuse extra tests
     "{\"\" : \"y\"}", // test 35
     "{\"x\" : \"y\",\n\"objects\" : {\"x\" : {\"x\" : \"y\"}\n},\n\"x1\" : \"y\"}\n", //test 36
     // short multi-line test 37
@@ -75,7 +75,7 @@ var TEST = {
     "SyntaxError : "+ // test2 = unclosed object
       "Bad object at line 2 : ",
     "SyntaxError : "+ // test3 = empty object
-      "no empty objects in amuse_um at line 1 : {}",
+      "no empty objects in amuse at line 1 : {}",
     "SyntaxError : "+ // test4 invalid character in object
       "Bad string at line 1 : {x}",
     "SyntaxError : "+  // test5 missing value
@@ -83,11 +83,11 @@ var TEST = {
     "SyntaxError : "+ // test 6 value is invalid character
       "Unexpected 'y' at line 1 : {\"x\" : y}", 
     "SyntaxError : "+ // test 7 true not allowed
-      "true invalid in amuse_um at line 1 : {\"x\" : true}", 
+      "true invalid in amuse at line 1 : {\"x\" : true}", 
     "SyntaxError : "+ // test 8 false not allowed
-      "false invalid in amuse_um at line 1 : {\"x\" : false}", 
+      "false invalid in amuse at line 1 : {\"x\" : false}", 
     "SyntaxError : "+ // test 9 null not allowed
-      "null invalid in amuse_um at line 1 : {\"x\" : null}", 
+      "null invalid in amuse at line 1 : {\"x\" : null}", 
     "SyntaxError : "+ // test 10 value is invalid array
       "only keys starting with $ may have an array value at line 1 : {\"x\" : [\"y\"]}", 
     "SyntaxError : "+ // test 11 only objects key allowed object value
@@ -110,7 +110,7 @@ var TEST = {
     "SyntaxError : "+ // test 21 invalid array value - object
       "no object allowed within array at line 1 : {\"$x\" : [{\"x\" : \"y\"}]}",
     "SyntaxError : "+ // test 22 objects object is empty
-      "no empty objects in amuse_um at line 1 : {\"objects\": {}}",
+      "no empty objects in amuse at line 1 : {\"objects\": {}}",
     "SyntaxError : "+ // test 23 invalid objects value - string
       "'objects' key only used for objects at line 1 : {\"objects\": \"y\"}",
     "SyntaxError : "+ // test 24 invalid objects value - array
@@ -120,7 +120,7 @@ var TEST = {
     "SyntaxError : "+ // test 26 'objects' object value must be an object not an array
       "objects level objects only at line 1 : {\"objects\": {\"x\" : [\"y\"]}",
     "SyntaxError : "+ // test 27 'objects' object value must not be an empty object
-      "no empty objects in amuse_um at line 1 : {\"objects\": {\"x\" : {}}",
+      "no empty objects in amuse at line 1 : {\"objects\": {\"x\" : {}}",
     "test28 is valid object", // test 28 valid objects object value valid properties object
     "SyntaxError : "+ // test 29 invalid trailing comma
       "Bad string at line 1 : {\"objects\": {\"x\" : {\"x\" : \"y\"},}}",
@@ -133,7 +133,7 @@ var TEST = {
       "Bad string at line 4 : }",
     "test34 is valid object", // test 34 object properties values valid
     "SyntaxError : "+ // test 35 invalid empty key
-      "empty key invalid in amuse_um at line 1 : {\"\" : \"y\"",
+      "empty key invalid in amuse at line 1 : {\"\" : \"y\"",
     "test36 is valid object", // test 36 valid meta-data following after 'objects'
     "test37 is valid object" // test 37 valid multi-object text
   ],

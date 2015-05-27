@@ -1,7 +1,7 @@
-// Towneley amuse_um collection editor / archive function
+// Towneley amuse collection editor / archive function
 var NW = (function(){
   "use strict";
-  var version = "0.0",date = "2015-04-06";
+  var version = "0.1",date = "2015-05-27";
   var win = "",
   log_name = "",
   collection = {};
@@ -12,7 +12,7 @@ var NW = (function(){
       "Version "+version+" ["+date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse_um\\";
+    window.FSO.pwd += "amuse\\";
     select = "<option value=\"\">Select a collection </option>";
     for (name in window.amuse_NAMES){
       if (window.amuse_NAMES[name].charAt(0) !== "*"){
@@ -201,7 +201,7 @@ var NW = (function(){
           log_check(collection_name);
         }
         else{ 
-          document.getElementById("headline").innerHTML = "amuse_um viewer only"; 
+          document.getElementById("headline").innerHTML = "amuse viewer only"; 
         } 
       }
     }

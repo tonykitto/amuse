@@ -1,4 +1,4 @@
-// amuse_um software validation
+// amuse software validation
 // testing amuse_PARSE
 var TEST = {
 	version : "0.0",
