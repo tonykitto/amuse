@@ -1,7 +1,7 @@
 // simple amuse_json collection viewer
 var Viewer = (function(){
     "use strict";
-    var version = "0.0", version_date = "2015-04-04";
+    var version = "0.1", version_date = "2015-04-11";
     var collection, // the museum collection object 
       edition, // museum collection edition
       date, // date when museum collection edition was published
@@ -14,7 +14,8 @@ var Viewer = (function(){
       names, // object maps object_number to position in working_list
       working_list_number, // points to object_number to be displayed by Viewer
       images, // name of directory containing museum object images
-      album; // the list of museum object images for object being displayed (property $images)  
+      album, // the list of museum object images for object being displayed (property $images)  
+      view_extension = "";
 /*  start must be the first Viewer function called and expects, as a parameter,
  *  a validated museum collection object
  *  all the shared variables other than album are initialised in start */
@@ -276,6 +277,7 @@ var Viewer = (function(){
       if (! valid){content += "<li>No properties to display </li>";}
       content += "</ul>";
       document.getElementById("object").innerHTML = content+album_init(object);
+      if (view_extension){ view_extension(object_number); }
       return "";
     }
 // choose_object handles user input to select the next museum object to display    
@@ -573,6 +575,11 @@ var Viewer = (function(){
       }
       return list;
     }
+// extend_view is set by the controller to add information to the object display
+    function extend_view(f){
+      view_extension = f;
+      return "";
+    }
 // about for tests
     function about(){
       return { "version": version, "version_date": version_date,
@@ -598,6 +605,7 @@ var Viewer = (function(){
       "album_list": album_list,
       "current_object_number": current_object_number,
       "last_object_number": last_object_number,
+      "extend_view": extend_view,      
       "about": about
     };
   })();
