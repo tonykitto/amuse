@@ -3,11 +3,11 @@
 // else does not offer editor function
 var amuse = {
   version : "7.0",
-  date : "2015-05-27",
+  date : "2015-05-28",
   session_init: function(coll, query){
     "use strict";
     var event;
-    document.getElementById("report").innerHTML = "amuse";
+    document.getElementById("report").innerHTML = "amuse: Version "+amuse.version+" ["+amuse.date+"]";
     window.Viewer.start(window[coll]);
     if (query){
       if (query === "edit"){
