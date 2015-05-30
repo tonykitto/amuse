@@ -1,7 +1,8 @@
 // simple amuse_json collection viewer
+// fix invalid html in function display_object and added img alt text
 var Viewer = (function(){
     "use strict";
-    var version = "0.1", version_date = "2015-04-11";
+    var version = "0.2", version_date = "2015-05-29";
     var collection, // the museum collection object 
       edition, // museum collection edition
       date, // date when museum collection edition was published
@@ -98,7 +99,8 @@ var Viewer = (function(){
       document.getElementById("object_number").value = 
         working_list[working_list_number];
       if (! window.Editor){ 
-        document.getElementById("report").innerHTML = "Viewer version "+version+" ["+version_date+"]"; 
+        document.getElementById("report").innerHTML =
+          "Viewer version "+version+" ["+version_date+"]"; 
       }
       display_object(working_list[working_list_number]);
       return "";
@@ -115,7 +117,7 @@ var Viewer = (function(){
       for (var i=0; i<length; i++){
         object_number = working_list[i];
         html+= "<li><b class=\"show\" onclick='Viewer.display_object(\""+object_number+"\")' >"+
-        object_number+"</b>: "+collection.objects[object_number][mandatory]+"</li>";
+          object_number+"</b>: "+collection.objects[object_number][mandatory]+"</li>";
       }
       document.getElementById("browser").innerHTML = html+"</ul>";
       return "";
@@ -135,7 +137,7 @@ var Viewer = (function(){
     
         var html, i;
         if (list.length === 0){return ""; }
-        html = "<ul><span class=\"centred\">"+prop+"</span>";
+        html = "<li><span class=\"centred\">"+prop+"</span><ul>";
         switch (prop){
           case "$doc_links" :
             html += add_links(list, "AZ_viewer");
@@ -153,7 +155,7 @@ var Viewer = (function(){
             for (i=0; i<list.length; i++ ){ html += "<li>"+list[i]+"</li>"; }
             break;
         }
-        return html+"</ul>";
+        return html+"</ul></li>";
       }
       function has_value(object, property){
         if (typeof object[property] === "string"){
@@ -199,11 +201,12 @@ var Viewer = (function(){
           function trio(list){
             var html;
             html = "<p><a id=\"a_album0\" target=\"_blank\" href=\""+images+
-              list[0]+"\" >"+"<img id=\"i_album0\" src=\""+images+list[0]+
+              list[0]+"\" >"+"<img id=\"i_album0\" alt=\""+list[0]+"\" src=\""+images+list[0]+
               "\" /></a>"+"<a id=\"a_album1\" target=\"_blank\" href=\""+images+
-              list[1]+"\" >"+"<img id=\"i_album1\" src=\""+images+list[1]+"\" /></a>";
+              list[1]+"\" >"+"<img id=\"i_album1\" alt=\""+list[1]+"\" src=\""+images+list[1]+
+              "\" /></a>";
             if (list.length >= 3){ html += "<a id=\"a_album2\" target=\"_blank\" href=\""+
-              images+list[2]+"\" >"+"<img id=\"i_album2\" src=\""+
+              images+list[2]+"\" >"+"<img id=\"i_album2\" alt=\""+list[2]+"\" src=\""+
               images+list[2]+"\" /></a>";
             }
             return html+"</p>";
@@ -217,7 +220,7 @@ var Viewer = (function(){
           album = list;
           html = trio(list);
           if (list.length > 3){
-            html += "<p align=\"center\" >"+
+            html += "<p class=\"centred\" >"+
               "<form oninput=\"amount.value=Viewer.album_list()[rangeInput.value]\" >"+
               "<input onclick=\"Viewer.album_change(this)\" type=\"range\""+
               " id=\"rangeInput\" name=\"rangeInput\" min=\"0\" max=\""+
@@ -245,13 +248,13 @@ var Viewer = (function(){
       object = collection.objects[object_number];
       if (("image" in object) && (object.image.toLowerCase().indexOf(".jpg")>0)){
         content = "<div id=\"img_block\"><p><a target=\"_blank\" href=\""+
-        images+object.image+"\" ><img id=\"primary\" src=\"../images/"+
+        images+object.image+"\" ><img id=\"primary\" alt=\"thumbnail\" src=\"../images/"+
         images+object.image+"\" /></a><br>"+object.image+"</p></div>";
       }
       else if (("primary_image" in object) &&
               (object.primary_image.toLowerCase().indexOf(".jpg")>0) ){
         content = "<div id=\"img_block\"><p><a target=\"_blank\" href=\""+
-        object.primary_image+"\" ><img id=\"primary\" src=\""+
+        object.primary_image+"\" ><img id=\"primary\" alt=\"thumbnail\" src=\""+
         object.primary_image+"\" /></a><br>"+
         object.primary_image.slice(object.primary_image.lastIndexOf("/")+1)+"</p></div>";
       }
@@ -270,7 +273,7 @@ var Viewer = (function(){
           group_result = get_key_values(object, key_list, part_of, parts);
           if (group_result){
             valid = true;
-            content += "<b>"+view_groups[i]+"</b><ul>"+group_result+"</ul>";
+            content += "<li><b>"+view_groups[i]+"</b><ul>"+group_result+"</ul></li>";
           }
         }
       }
@@ -355,7 +358,8 @@ var Viewer = (function(){
         return true;
       }
     
-      var keyCode, text, keywords, local_list, tags, keys, candidates, object_number, values, prop;
+      var keyCode, text, keywords, local_list, tags, keys, candidates,
+          object_number, values, prop;
       if (typeof e === "number"){keyCode = e; }
       else{
         keyCode = (window.event) ? event.keyCode : e.keyCode;
