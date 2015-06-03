@@ -1,7 +1,9 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
+// hides publish/discard buttons when editing
+// viewer fixed on edited object when editor open
 var Editor = (function(){
   "use strict";
-  var version = "0.1", date = "2015-05-27";
+  var version = "1.0", date = "2015-06-02";
   var collection, // the museum collection object, provided by edit_prompt
     file_name, // name provided by edit_prompt, to be used when saving results of edit
     author, // alphanumeric string, authority to edit, or empty string - edit denied 
@@ -35,9 +37,12 @@ var Editor = (function(){
       if (editor === "selection"){
         object_name = window.Viewer.current_object_number();
         o_edit = object_name;
+        window.Viewer.freeze_viewer(o_edit);
         editor = "opened";
         document.getElementById("edit_button").innerHTML = "CLOSE?";
         document.getElementById("add_button").innerHTML = "";
+        document.getElementById("publish_button").innerHTML = "";
+        document.getElementById("discard_button").innerHTML = "";
         group_header = "<p><b class=\"name\" >"+object_name+"</b>";
         for (var i=0; i<collection.$groups.length; i++ ){
           group = collection.$groups[i];
@@ -59,10 +64,17 @@ var Editor = (function(){
       return "";
     }
     
+    var keep;
     if (! editor){ return ""; }
     if (editor === "closed"){
+      window.Viewer.freeze_viewer("");
       document.getElementById("edit_button").innerHTML = "EDIT?";
       document.getElementById("add_button").innerHTML = "ADD OBJECT?";
+      if (o_publish){
+        if (window.FSO){ keep = "PUBLISH?"; } else{ keep = "SAVE JSON TO FILE?"; }
+        document.getElementById("publish_button").innerHTML = keep;
+        document.getElementById("discard_button").innerHTML = "DISCARD?";
+      }
       document.getElementById("editor").innerHTML = "select object to edit or add new object";
       editor = "selection";
     }
@@ -316,8 +328,6 @@ var Editor = (function(){
 // object_choice handles onchange for added object selected_name
   function object_choice(object_name){
     var first_property;
-    editor = "closed";
-    show_editor();
     if (object_name){
       show_publishing();
       collection.objects[object_name] = {};
@@ -328,16 +338,13 @@ var Editor = (function(){
         window.NW.log_string(object_name,first_property,"add value");
       }         
     }
+    editor = "closed";
+    show_editor();
     return "";
   }
 // show_publishing called by save_edit, save_term, save_list, object_choice and Editor_fn
   function show_publishing(){
-    var keep;
-    if (o_publish){ return ""; }
     o_publish = true;
-    if (window.FSO){ keep = "PUBLISH?"; } else{ keep = "SAVE JSON TO FILE?"; }
-    document.getElementById("publish_button").innerHTML = keep;
-    document.getElementById("discard_button").innerHTML = "DISCARD?";
     return "";
   }
 // publish handles publish_button onclick
