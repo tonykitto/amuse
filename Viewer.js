@@ -1,8 +1,9 @@
 // simple amuse_json collection viewer
-// fix invalid html in function display_object and added img alt text
+// case-sensitive property.key and quoted string added to filter values
+// viewer fixed on edited object when editor open
 var Viewer = (function(){
     "use strict";
-    var version = "0.2", version_date = "2015-05-29";
+    var version = "1.0", version_date = "2015-06-03";
     var collection, // the museum collection object 
       edition, // museum collection edition
       date, // date when museum collection edition was published
@@ -15,7 +16,10 @@ var Viewer = (function(){
       names, // object maps object_number to position in working_list
       working_list_number, // points to object_number to be displayed by Viewer
       images, // name of directory containing museum object images
-      album, // the list of museum object images for object being displayed (property $images)  
+      album, // the list of museum object images for object being displayed (property $images)
+      frozen = "", // when not empty, viewed object_number cannot change (used by Editor)
+      frozen_filter = "", // set to filter_input when frozen 
+      frozen_sort = "", // set to sort_property when frozen
       view_extension = "";
 /*  start must be the first Viewer function called and expects, as a parameter,
  *  a validated museum collection object
@@ -102,6 +106,7 @@ var Viewer = (function(){
         document.getElementById("report").innerHTML =
           "Viewer version "+version+" ["+version_date+"]"; 
       }
+      frozen = false;
       display_object(working_list[working_list_number]);
       return "";
     }
@@ -243,6 +248,9 @@ var Viewer = (function(){
       }
 
       var object, content, valid, part_of, parts, view_groups, key_list, group_result;
+      if (frozen){
+        if (object_number !== frozen){ return ""; }
+      }
       document.getElementById("object_number").value = object_number;
       working_list_number = names[object_number];
       object = collection.objects[object_number];
@@ -286,6 +294,7 @@ var Viewer = (function(){
 // choose_object handles user input to select the next museum object to display    
     function choose_object(e){
       var keyCode, text, object_number;
+      if (frozen){ return ""; }
       if (typeof e === "number"){keyCode = e; }
       else{
         keyCode = (window.event) ? event.keyCode : e.keyCode;
@@ -339,27 +348,105 @@ var Viewer = (function(){
           }
         }
         return list;
-      }          
-      // match_keys returns true if all given keys match any one of a list of values
-      function match_keys(values, keys){
-        var i, key, match, j, value;
-        for (i=0; i<keys.length; i++ ){
-          key = keys[i];
-          match = false;
-          for (j=0; j<values.length; j++){
-            value = values[j].toLowerCase();
-            if (value.indexOf(key) >= 0){
-              match = true;
+      }
+      // match_property_keys returns list of object_numbers where keys match property values
+      // match is case sensitive
+      function match_property_keys(objects, candidates, keys){
+        function is_match(object, property_key){
+          var stop, property, key;
+          stop = property_key.indexOf(".");
+          if (stop<1){ return false; }
+          property = property_key.slice(0, stop);
+          key = property_key.slice(stop+1);
+          if (! (property in object)){ return false; }
+          if (property.charAt(0) === "$"){
+            if ( object[property].join("t").indexOf(key)< 0){ return false; }
+          }
+          else{
+            if ( object[property].indexOf(key)< 0){ return false; }
+          }
+          return true;
+        }
+           
+        var list, number_of_candidates, number_of_keys, i, object, match, j;
+        list = [];
+        number_of_candidates = candidates.length;
+        number_of_keys = keys.length;
+        for (i=0; i<number_of_candidates; i++){
+          object = candidates[i];
+          match = true;
+          for (j=0; j<number_of_keys; j++){
+            if (! is_match(objects[object], keys[j])){
+              match = false;
+              break; 
+            }
+          }
+          if (match){ list.push(object); }
+        }
+        return list;
+      }
+      // match_string returns object_numbers where string matches a property value
+      // if lower_case is true, match is case insensitive
+      function match_string(objects, list, string, lower_case){
+        var matches, list_length, i, object, property, value;
+        matches = [];
+        list_length = list.length;
+        for (i=0; i<list_length; i++){
+          object = objects[list[i]];
+          for (property in object){
+            if (property.charAt(0) !=="$"){
+              value = object[property];
+            }
+            else{ value = object[property].join("\t"); }
+            if (lower_case){ value = value.toLowerCase(); }
+            if (value.indexOf(string)>=0){
+              matches.push(list[i]);
               break;
             }
           }
-          if (! match){return false; }
         }
-        return true;
+        return matches;
+      }
+      // extract_quotes removes quoted strings from text and returns both in object
+      function extract_quotes(text){
+        var quotes, input, strings, quote, endquote, string;
+        quotes = true;
+        input = text;
+        strings = [];
+        while (quotes){
+          quote = input.indexOf("\"");
+          if (quote<0){ quotes = false; }
+          else{
+            endquote = input.slice(quote+1).indexOf("\"");
+            if (endquote<0){
+              string = input.slice(quote+1);
+              if (string){ strings.push(string); }
+              input = input.slice(0, quote);
+              quotes = false;
+            }
+            else{
+              string = input.slice(quote+1, quote+endquote+1);
+              if (string){
+                strings.push(string);
+                input = input.slice(0, quote)+" "+input.slice(quote+endquote+2);
+              }
+            }
+          }
+        }
+        return {"quoted": strings, "remainder": input};
+      }
+      // is_listed returns true if value is in list
+      function is_listed(value, list){
+        var list_length, i;
+        list_length = list.length;
+        for (i=0; i<list_length; i++){
+          if (value === list[i]){ return true; }
+        }
+        return false;
       }
     
-      var keyCode, text, keywords, local_list, tags, keys, candidates,
-          object_number, values, prop;
+      var keyCode, text, strings, quotes, keywords, tags, property_keys, keys, local_list;
+      if (frozen){return ""; }
       if (typeof e === "number"){keyCode = e; }
       else{
         keyCode = (window.event) ? event.keyCode : e.keyCode;
@@ -378,34 +465,41 @@ var Viewer = (function(){
           }
           return ""; 
         }
-        keywords = text.match(/\S+/g); // one or more words separated by white space to array
-        local_list = [];
+        strings = extract_quotes(text);
+        quotes = strings.quoted;
+        keywords = strings.remainder.match(/\S+/g); // words separated by white space to array
+        if (! keywords){ keywords = []; }
         tags = [];
+        property_keys = [];
         keys = [];
         for (var i=0; i<keywords.length; i += 1){
           if (keywords[i].charAt(0) === "#"){
             tags.push(keywords[i].slice(1).toLowerCase()); // remove # prefix
           }
+          else if (keywords[i].indexOf(".")>0){
+            if (is_listed(keywords[i].slice(0,keywords[i].indexOf(".")),collection.$props)){
+              property_keys.push(keywords[i]);
+            }
+          }
           else{ keys.push(keywords[i].toLowerCase()); }
         }
         if (tags.length > 0){
-          candidates = match_tags(collection.objects, full_list, tags);
+          local_list = match_tags(collection.objects, full_list, tags);
         }
-        else{ candidates = full_list; }
-        if ((candidates.length > 0) && (keys.length > 0)){
-          for (var j=0; j<candidates.length; j += 1){
-            object_number = candidates[j];
-            values = [];
-            for (prop in collection.objects[object_number]){
-              if (prop.charAt(0) === "$"){ 
-                values.push(collection.objects[object_number][prop].join(",").toLowerCase());
-              }
-              else { values.push(collection.objects[object_number][prop].toLowerCase()); }
-            }
-            if (match_keys(values, keys)){ local_list.push(object_number); }
+        else{ local_list = full_list; }
+        if (property_keys.length> 0){
+          local_list = match_property_keys(collection.objects, local_list, property_keys);
+        }
+        if ((local_list.length > 0) && (keys.length > 0)){
+          for (var j=0; j<keys.length; j+= 1){
+            local_list = match_string(collection.objects, local_list, keys[j], true);
           }
         }
-        else{ local_list = candidates; }
+        if ((local_list.length >0) && (quotes.length>0)){
+          for (var k=0; k<quotes.length; k += 1){
+            local_list = match_string(collection.objects, local_list, quotes[k], false);
+          }
+        }
         if (local_list.length >0){
           filtered_list = local_list;
           if (! sort_property){
@@ -430,6 +524,7 @@ var Viewer = (function(){
  *  but does not change any sort property order. This causes those objects that 
  *  have no value for the sort property to appear at the top of the list. */    
     function filter_clear(){
+      if (frozen){ return ""; }
       document.getElementById("filter_box").value = "";
       filter_input = "";
       filtered_list = full_list;
@@ -452,6 +547,7 @@ var Viewer = (function(){
       }
     
       var current_filter, old_sort;
+      if (frozen){ return ""; }
       current_filter = document.getElementById("filter_box").value;
       if (current_filter !== filter_input){ filter_list(13); }
       if (! property){ // object_number only
@@ -584,6 +680,20 @@ var Viewer = (function(){
       view_extension = f;
       return "";
     }
+// freeze_viewer is called by Editor at start and end of editing
+    function freeze_viewer(object_number){
+      if (object_number){
+        frozen = object_number;
+        frozen_filter = filter_input;
+        frozen_sort = sort_property; 
+      }
+      else{
+        frozen = "";
+        document.getElementById("filter_box").value = frozen_filter;
+        document.getElementById("selected_sort").value = frozen_sort;
+      }
+      return "";
+    }
 // about for tests
     function about(){
       return { "version": version, "version_date": version_date,
@@ -609,7 +719,8 @@ var Viewer = (function(){
       "album_list": album_list,
       "current_object_number": current_object_number,
       "last_object_number": last_object_number,
-      "extend_view": extend_view,      
+      "extend_view": extend_view,
+      "freeze_viewer": freeze_viewer,
       "about": about
     };
   })();
