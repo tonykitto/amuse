@@ -1,9 +1,8 @@
 // simple amuse_json collection viewer
-// case-sensitive property.key and quoted string added to filter values
-// viewer fixed on edited object when editor open
+// changed match_property_keys to property=key where key is start of property value
 var Viewer = (function(){
     "use strict";
-    var version = "1.0", version_date = "2015-06-03";
+    var version = "1.1", version_date = "2015-06-04";
     var collection, // the museum collection object 
       edition, // museum collection edition
       date, // date when museum collection edition was published
@@ -349,21 +348,28 @@ var Viewer = (function(){
         }
         return list;
       }
-      // match_property_keys returns list of object_numbers where keys match property values
+      // match_property_keys returns list of object_numbers where keys match start of property values
       // match is case sensitive
       function match_property_keys(objects, candidates, keys){
         function is_match(object, property_key){
-          var stop, property, key;
-          stop = property_key.indexOf(".");
-          if (stop<1){ return false; }
-          property = property_key.slice(0, stop);
-          key = property_key.slice(stop+1);
+          var equal, property, key, match;
+          equal = property_key.indexOf("=");
+          if (equal<1){ return false; }
+          property = property_key.slice(0, equal);
+          key = property_key.slice(equal+1);
           if (! (property in object)){ return false; }
           if (property.charAt(0) === "$"){
-            if ( object[property].join("t").indexOf(key)< 0){ return false; }
+            match = false;
+            for (var i=0; i<object[property].length; i++){
+              if (object[property][i].indexOf(key) === 0){ 
+                match = true;
+                break;
+              }
+            }
+            return match; 
           }
           else{
-            if ( object[property].indexOf(key)< 0){ return false; }
+            if ( object[property].indexOf(key)!== 0){ return false; }
           }
           return true;
         }
@@ -476,8 +482,8 @@ var Viewer = (function(){
           if (keywords[i].charAt(0) === "#"){
             tags.push(keywords[i].slice(1).toLowerCase()); // remove # prefix
           }
-          else if (keywords[i].indexOf(".")>0){
-            if (is_listed(keywords[i].slice(0,keywords[i].indexOf(".")),collection.$props)){
+          else if (keywords[i].indexOf("=")>0){
+            if (is_listed(keywords[i].slice(0,keywords[i].indexOf("=")),collection.$props)){
               property_keys.push(keywords[i]);
             }
           }
