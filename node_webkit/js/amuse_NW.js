@@ -1,29 +1,276 @@
-// Towneley amuse collection editor / archive function
+// Towneley amuse collection editor / archive curatorial control
 var NW = (function(){
   "use strict";
-  var version = "0.1",date = "2015-05-27";
+  var version = "0.4",date = "2015-06-15";
+  // replace backward slash by forward slash for all folders
   var win = "",
+  pwd = "",
   log_name = "",
-  collection = {};
+  collection = {},
+  STORE = {},
+  STORE_objects = {}; // exclusive to STORE functions
 // initialises collections list  
   function start(){
-    var select, name, o;
+    var select, name, o, result, store_changed;
     document.getElementById("report").innerHTML =
       "Version "+version+" ["+date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse\\";
+    pwd = window.FSO.pwd+"amused/";
+    if ("amuse_TERMS" in window.amuse_NAMES){
+      window.FSO.pwd += "amuse/";
+    }
+    else{ window.FSO.pwd += "amused/"; } // work in progress
+    result = load_STORE();
+    if (result){
+      document.getElementById("report").innerHTML += result;
+      return "";
+    }
+    store_changed = create_STORE_objects();
+    if (store_changed){ save_STORE(); }
     select = "<option value=\"\">Select a collection </option>";
     for (name in window.amuse_NAMES){
-      if (window.amuse_NAMES[name].charAt(0) !== "*"){
-        select += "<option value=\""+name+"\">"+window.amuse_NAMES[name]+"</option>";
-      }
+      select += "<option value=\""+name+"\">"+window.amuse_NAMES[name]+"</option>";
     }
     o = document.getElementById("selected_choice");
     o.innerHTML = select;
     o.onchange = function(){NW.load_collection(o.value); };
     return "";
   }
+/* This STORE section extends the Editor functions to manage store room locations.
+ * On starting, the STORE json file is loaded and STORE_objects is created to quickly
+ * access museum objects locations and remove any redundant STORE records.  */
+// load_STORE
+  function load_STORE(){
+    var json_file = pwd+"json/STORE.json";
+    try{
+      STORE = JSON.parse(window.FSO.read_file(json_file));
+    }
+    catch(arg){
+      return json_file+" not a valid json file";
+    }
+    return "";
+  }
+// save_STORE
+  function save_STORE(){
+    var json_file = pwd+"json/STORE.json";
+    var text = JSON.stringify(STORE, null, "  ");
+    window.FSO.create_file(json_file, text);
+    return "";
+  }
+// create_STORE_objects maps object_number to STORE.json room properties
+  function create_STORE_objects(){
+    function load_group(group){          
+      var change, room, place, list, length, i, object_number, ticket;
+      change = false;
+      for (room in group){
+        for (place in group[room]){
+          if (place !== "tickets"){
+            list = group[room][place].slice();
+            length = list.length;
+            if (length){
+              for (i=0; i<length; i++){
+                object_number = list[i];
+                if (object_number in STORE_objects){ // delete this entry
+                  group[room][place] = 
+                    remove_item_from_list(object_number, group[room][place]);
+                  change = true;
+                }
+                else{
+                  STORE_objects[object_number] = {};
+                  STORE_objects[object_number].room = room;
+                  STORE_objects[object_number].place = place;
+                  STORE_objects[object_number].ticket = "";
+                }
+              }
+            }
+          }
+        }
+        if ("tickets" in group[room]){
+          list = group[room].tickets.slice();
+          length = list.length;
+          if (length){
+            for (i=0; i<length; i++){
+              ticket = list[i];
+              object_number = ticket.slice(0, ticket.indexOf("@"));
+              if ( (object_number in STORE_objects) &&
+                   (STORE_objects[object_number].room === room) ){
+                STORE_objects[object_number].ticket = 
+                  ticket.slice(ticket.indexOf("@")+1);
+              }
+              else{ // remove duplicate and loose tickets
+                group[room].tickets = remove_item_from_list(ticket, group[room].tickets);
+                change = true;
+              }
+            }
+          }
+        }
+      }
+      return change;
+    }
+      
+    var changed, list, length, i, object_number;
+    changed = false;
+    changed = load_group(STORE.store);
+    list = STORE.uncertain.slice();
+    length = list.length;
+    if (length){
+      for (i=0; i<length; i++){
+        object_number = list[i];
+        if (! (object_number in STORE_objects)){
+          STORE_objects[object_number] = {};
+          STORE_objects[object_number].room = "uncertain";
+          STORE_objects[object_number].place = "";
+          STORE_objects[object_number].ticket = "";
+        }
+        else{ 
+          STORE.uncertain = 
+            remove_item_from_list(object_number, STORE.uncertain);
+          changed = true;
+        }
+      }
+    }
+    return changed;
+  }
+// update_STORE  
+  function update_STORE(){
+    function is_listed(name, list){
+      var i;
+      for (i in list){
+        if (name === list[i]){return true; }
+      }
+      return false;
+    }
+    
+    var changed, object_number, normal, current, room, place, ticket;
+    if (! is_listed("normal_location", collection.$props)){
+      window.Viewer.extend_view("");
+      return "";
+    }
+    changed = false;
+    for (object_number in collection.objects){
+      normal = collection.objects[object_number].normal_location;
+      current = collection.objects[object_number].current_location;
+      // requires both normal and current locations for a STORE record
+      if ( normal !== "store" || ! current){ 
+        if (object_number in STORE_objects){
+          delete_STORE_record(object_number);
+          delete STORE_objects[object_number];
+          changed = true;
+        }
+        continue;
+      }
+      if (! (object_number in STORE_objects)){ // new entry
+        STORE_objects[object_number] = {};
+        STORE_objects[object_number].room = "uncertain";
+        STORE_objects[object_number].place = "";
+        STORE_objects[object_number].ticket = "";
+        STORE.uncertain.push(object_number);
+        changed = true;
+      }
+      else{ // existing entry
+        room = STORE_objects[object_number].room;
+        place = STORE_objects[object_number].place;
+        ticket = STORE_objects[object_number].ticket;
+        if (room !== "uncertain"){ // otherwise no ticket
+          if (current === "store"){ // either no ticket or ticket = uncertain
+            if (ticket === "uncertain"){
+              if (! is_listed(object_number+"@uncertain",
+                              STORE.store[room].tickets)){
+                STORE.store[room].tickets = "";
+                changed = true;
+              }
+            }
+            else{
+              if (ticket){ // swap display room ticket for uncertain ticket
+                STORE.store[room].tickets =
+                  remove_item_from_list(object_number+"@"+ticket,
+                                        STORE.store[room].tickets);
+                STORE.store[room].tickets.push(object_number+"@uncertain");
+                STORE_objects[object_number].ticket = "uncertain";
+                changed = true;
+              }
+            }
+          }
+          else{
+            if (ticket !== current){ // either no ticket or ticket = current
+              if (ticket){
+                STORE.store[room].tickets =
+                  remove_item_from_list(object_number+"@"+ticket,
+                                        STORE.store[room].tickets);
+              }
+              if (! ("tickets" in  STORE.store[room])){
+                STORE.store[room].tickets = [];
+              }
+              STORE.store[room].tickets.push(object_number+"@"+current);                  
+              STORE_objects[object_number].ticket = current;
+              changed = true;
+            }
+          }
+        }
+      }
+    }
+    if (changed){ save_STORE(); }
+    window.Viewer.extend_view(NW.display_store_room);
+    return "";
+  }    
+// display_store_room is used with Viewer.extend_view
+  function display_store_room(object_number){
+    var view, text, insert, report, place;
+    if (object_number in STORE_objects){
+      if ((collection.objects[object_number].normal_location === "store") &&
+          (collection.objects[object_number].current_location === "store")){
+        view = document.getElementById("object");
+        text = view.innerHTML;
+        insert = text.indexOf("</h4>")+5;
+        if (STORE_objects[object_number].room === "uncertain"){
+          report = "Not yet shelved";
+        }
+        else{
+          place = STORE_objects[object_number].room+":"+
+                  STORE_objects[object_number].place;
+          if (STORE_objects[object_number].ticket === ""){
+            report = "Stored in "+place;
+          }
+          else{
+            report = "Check required for<br>"+place;
+          }
+        }
+        view.innerHTML = text.slice(0,insert)+"<h4>"+report+"</h4>"+text.slice(insert);
+      }
+    }
+    return "";
+  }
+// common STORE functions
+  function delete_STORE_record(object_number){
+    var room, place, ticket;
+    room = STORE_objects[object_number].room;
+    place = STORE_objects[object_number].place;
+    ticket = STORE_objects[object_number].ticket;
+    if (room === "uncertain"){
+      STORE.uncertain = remove_item_from_list(object_number, STORE.uncertain);
+    }
+    else{
+      STORE.store[room][place] = 
+        remove_item_from_list(object_number, STORE.store[room][place]);
+      if (ticket){
+        STORE.store[room].tickets =
+        remove_item_from_list(object_number+"@"+ticket, STORE.store[room].tickets);
+      }
+    }
+    return "";
+  }       
+  function remove_item_from_list(item, list){
+    var length, i;
+    length = list.length;
+    for (i=0; i<length; i++){
+      if (item === list[i]){
+        return list.slice(0,i).concat(list.slice(i+1));
+      }
+    }
+    return list;
+  }
+// end of STORE section
 /* load_collection handles onchange for selected_choice, 
  * it first checks the archive is up-to-date, it tries to stop the session
  * from closing before any edits are published, it finally   */
@@ -191,30 +438,32 @@ var NW = (function(){
     }
     collection = {};
     report = archive_check(collection_name);
-    if (report){ alert("Error: "+report); }
-    else{
-      window.Viewer.start(collection);
-      if (window.Editor){
-        window.Editor.edit_prompt(collection_name, collection);
-        if (window.Editor.get_author()){
-          before_unload();
-          log_check(collection_name);
-        }
-        else{ 
-          document.getElementById("headline").innerHTML = "amuse viewer only"; 
-        } 
+    if (report){ alert("Error: "+report); return ""; }
+    report = update_STORE(collection);
+    if (report){ alert("Error: "+report); return ""; }
+    window.Viewer.start(collection);
+    if (window.Editor){
+      window.Editor.edit_prompt(collection_name, collection);
+      if (window.Editor.get_author()){
+        before_unload();
+        log_check(collection_name);
       }
+      else{ 
+        document.getElementById("headline").innerHTML = "amuse viewer only"; 
+      } 
     }
     return "";
   }  
-/* complete_archive adds latest collection property values to the existing archive file
- * either called by Editor directly after publishing the changes or 
- * on re-start in the event of a network failure before completion */
+/* complete_archive called by Editor directly after publishing changes
+ * it adds latest collection property values to the existing archive file
+ * and calls update_STORE to update STORE  */
   function complete_archive(collection_name, update){
-    var archive;
+    var archive, report;
     archive = load_archive(collection_name);
     if (typeof archive === "string"){return archive; }
-    return update_archive(collection_name, archive, update);
+    report = update_archive(collection_name, archive, update);
+    if (! report){ report = update_STORE(); }
+    return report;
   }
 // log functions called by NW and by Editor 
   function log_start(){
@@ -243,8 +492,7 @@ var NW = (function(){
     return "";
   }
 /* shared functions:  
- * load_archive and update_archive called by load_collection and complete_archive
- *  update_archive called by load_collection and */
+ * load_archive and update_archive called by load_collection and complete_archive */
   function load_archive(collection_name){
     var archive_file;
     archive_file = window.FSO.pwd+"json_archive/"+collection_name+".arch";
@@ -341,16 +589,18 @@ var NW = (function(){
     window.FSO.create_file(window.FSO.pwd+"json_archive/"+collection_name+".arch",
       JSON.stringify(archive, null, "  "));
     return "";
-  }  
+  } 
   // about for tests  
   function about(){
     return {"version": version, "date": date,
-      "win": win, "log_name": log_name, "collection": collection
+      "win": win, "log_name": log_name, "collection": collection,
+      "STORE": STORE, "STORE_objects": STORE_objects
     };
   }
   
   return {
     "start": start,
+    "display_store_room": display_store_room,
     "load_collection": load_collection,
     "complete_archive": complete_archive,
     "log_start": log_start,

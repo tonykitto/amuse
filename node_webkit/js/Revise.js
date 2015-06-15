@@ -1,7 +1,7 @@
 // amuse revision control
 var Revise = (function(){
   "use strict";
-  var version = "0.1", date = "2015-05-27";
+  var version = "0.2", date = "2015-06-15";
   var file_name, // received by handleFiles (amuse_X.json)
   archive_name, // set by handleFiles (amuse_X)
   update_object = {}, // created by parsing the file_name content
@@ -13,7 +13,7 @@ var Revise = (function(){
       "Version "+version+" ["+date+"]";
     if (! ("root" in window)){alert("Can only run with node-webkit"); return ""; }
     window.FSO.init();
-    window.FSO.pwd += "amuse\\";
+    window.FSO.pwd += "amuse/";
   }
 // handleFiles invoked by onchange for fileInput
   function handleFiles(files){

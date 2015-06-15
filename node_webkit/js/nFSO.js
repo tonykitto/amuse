@@ -1,9 +1,7 @@
 // simple file management system for text files
 // used specifically for node-webkit file access
 // root directory is the nw.exe home directory
-// 2014-02-19 version 0.1 [removed nat_sort]
-// 2014-09-26 version 0.2 [added create_binary_file]
-
+// 2015-06-15 version 0.3 [allows backward or forward slash for pwd
 var FSO = {
   valid : false,
   pwd  : "",
@@ -11,7 +9,10 @@ var FSO = {
   init : function () {
 		var epath, fold;
 		epath = process.execPath;
-		fold = epath.lastIndexOf("\\");
+    if (epath.indexOf("\\")>=0){
+      fold = epath.lastIndexOf("\\");
+    }
+    else{ fold = epath.lastIndexOf("/"); }
 		FSO.pwd = epath.slice(0, fold+1);
     FSO.valid = true;
   },
