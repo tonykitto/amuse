@@ -1,9 +1,8 @@
 // amuse_json collection editor for either HTML5 File API or node-webkit
-// hides publish/discard buttons when editing
-// viewer fixed on edited object when editor open
+// allows term list drop-down option to delete property value 
 var Editor = (function(){
   "use strict";
-  var version = "1.0", date = "2015-06-02";
+  var version = "1.1", date = "2015-07-13";
   var collection, // the museum collection object, provided by edit_prompt
     file_name, // name provided by edit_prompt, to be used when saving results of edit
     author, // alphanumeric string, authority to edit, or empty string - edit denied 
@@ -141,6 +140,7 @@ var Editor = (function(){
         "onchange=Editor.save_term(term.value)>"];
       options.push("<option value=\"none\">select a term</option>");
       options.push("<option value=\"none\">no change</option>");
+      options.push("<option value=\"\">remove property</option>");
       for (var j=0; j<tlist.length; j+= 1){
         options.push("<option value=\""+tlist[j]+"\">"+tlist[j]+"</option>");
       }
@@ -201,6 +201,15 @@ var Editor = (function(){
   }
 // save_term handles onchange for term_list properties
   function save_term(term){
+    if (! term){ // empty string, delete the selected property
+      if (edit_property in collection.objects[o_edit]){
+        delete collection.objects[o_edit][edit_property];
+        if (window.FSO){ window.NW.log_string(o_edit,edit_property,""); }
+        show_publishing();
+      }
+      edit_done();
+      return "";
+    }
     if ((term !== "none") && (term !== edit_original)){
       if (window.Editor_fn && window.Editor_fn.has_trigger(edit_property)){
         window.Editor_fn.trigger(edit_property,term,collection);
